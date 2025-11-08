@@ -34,7 +34,7 @@ namespace RandomizerTools.Services
         public T GetRandomItem<T>(List<T> items)
         {
             if (items == null || items.Count == 0)
-                throw new ArgumentException("List cannot be null or empty")
+                throw new ArgumentException("List cannot be null or empty");
             
             int index = _random.Next(items.Count);
             return items[index];
@@ -48,7 +48,7 @@ namespace RandomizerTools.Services
             if (items == null || items.Count == 0)
                 return new List<T>();
 
-            var shuffled = new List<T>(items);
+            var shuffled = new List<T>(items); // Make a copy
             int n = shuffled.Count;
 
             for (int i = n - 1; i > 0; i--)
@@ -93,7 +93,14 @@ namespace RandomizerTools.Services
             var shuffled = ShuffleList(items);
             var teams = new List<List<T>>();
 
-            for (int i = 0; i < teamCount; i++;)
+            // Create empty teams first
+            for (int i = 0; i < teamCount; i++)
+            {
+                teams.Add(new List<T>());
+            }
+
+            // Distribute shuffled items across teams
+            for (int i = 0; i < shuffled.Count; i++)
             {
                 teams[i % teamCount].Add(shuffled[i]);
             }
