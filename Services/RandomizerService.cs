@@ -7,6 +7,9 @@ using System.Security.Cryptography.RandomNumberGenerator;
 
 namespace RandomizerTools.Services
 {
+    /// <summary>
+    /// Service providing core randomization functionality for all tools
+    /// </summary>
     public class RandomizerService
     {
         private readonly Random _random;
