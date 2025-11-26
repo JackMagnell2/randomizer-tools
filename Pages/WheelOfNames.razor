@@ -13,18 +13,18 @@
     <div class="row g-4 align-items-start">
         <div class="col-lg-4">
             <div class="card entries-card h-100">
-                <div class="card-header border-bottom-0 pt-4 pb-0">
-                    <h3 class="fw-bold text-dark mb-0">Entries</h3>
-                    <small class="text-muted">@_viewModel.Entries.Count items</small>
+                <div class="card-header border-bottom-0">
+                    <h3 class="fw-bold mb-0">Entries</h3>
+                    <small>@_viewModel.Entries.Count items</small>
                 </div>
                 <div class="card-body d-flex flex-column">
                     <div class="input-group modern-input-group mb-3">
                         <input type="text" class="form-control modern-input" 
-                               placeholder="Add an entry..." 
+                               placeholder="Type a name..." 
                                @bind="currentInput" 
                                @bind:event="oninput"
                                @onkeypress="HandleKeyPress" />
-                        <button class="btn btn-primary btn-add" @onclick="AddName">
+                        <button class="btn btn-add" @onclick="AddName">
                             Add
                         </button>
                     </div>
@@ -32,8 +32,8 @@
                     <div class="entries-list flex-grow-1 overflow-auto pe-2" style="max-height: 50vh;">
                         @if (_viewModel.Entries.Count == 0)
                         {
-                            <div class="text-center text-muted mt-5 opacity-50">
-                                <span class="fs-1">📝</span>
+                            <div class="text-center text-white mt-5 opacity-50">
+                                <span class="fs-1">🎰</span>
                                 <p class="mt-2 small">List is empty.</p>
                             </div>
                         }
@@ -41,10 +41,10 @@
                         {
                             @foreach (var entry in _viewModel.Entries)
                             {
-                                <div class="d-flex justify-content-between align-items-center p-2 mb-2 bg-light rounded hover-shadow">
-                                    <span class="fw-500 text-truncate pe-2">@entry.Name</span>
-                                    <button class="btn btn-link text-danger p-0 text-decoration-none" @onclick="() => RemoveEntry(entry)">
-                                        <small>✕</small>
+                                <div class="entry-item">
+                                    <span class="entry-text text-truncate">@entry.Name</span>
+                                    <button class="btn btn-link btn-remove-entry p-0 text-decoration-none" @onclick="() => RemoveEntry(entry)">
+                                        ✕
                                     </button>
                                 </div>
                             }
@@ -55,7 +55,7 @@
         </div>
 
         <div class="col-lg-8">
-            <div class="d-flex flex-column align-items-center justify-content-center h-100">
+            <div class="d-flex flex-column align-items-center justify-content-center h-100 wheel-container-fix">
                 
                 <div class="wheel-wrapper">
                     <canvas id="wheelCanvas"></canvas>
