@@ -1,0 +1,94 @@
+@page "/wheel"
+@using RandomizerTools.ViewModels
+@using RandomizerTools.Models
+@using RandomizerTools.Services
+@inject RandomizerService RandomizerService
+
+<PageTitle>Wheel of Names - RandomizerTools</PageTitle>
+
+<div class="wheel-container">
+    <h2>Wheel of Names</h2>
+    <p class="subtitle">Add names and spin the wheel to randomly select a winner!</p>
+
+    <!-- Input Section -->
+    <div class="input-section">
+        <input type="text" 
+               class="form-control name-input" 
+               placeholder="Enter a name..." 
+               @bind="currentInput"
+               @onkeypress="HandleKeyPress" />
+        <button class="btn btn-primary add-btn" @onclick="AddName">Add</button>
+    </div>
+
+    <!-- Entries List -->
+    <div class="entries-section">
+        <h5>Entries (@_viewModel.Entries.Count)</h5>
+        @if (_viewModel.Entries.Count == 0)
+        {
+            <p class="text-muted">No entries yet. Add some names to get started!</p>
+        }
+        else
+        {
+            <div class="entries-list">
+                @foreach (var entry in _viewModel.Entries)
+                {
+                    <div class="entry-item">
+                        <span>@entry.Name</span>
+                        <button class="btn btn-sm btn-danger" @onclick="() => RemoveEntry(entry)">Remove</button>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Spin Button -->
+    @if (_viewModel.Entries.Count > 0)
+    {
+        <div class="spin-section">
+            <button class="btn btn-success btn-lg spin-btn" @onclick="SpinWheel">🎡 Spin the Wheel!</button>
+        </div>
+    }
+
+    <!-- Winner Display -->
+    @if (_viewModel.SelectedWinner != null)
+    {
+        <div class="winner-section">
+            <h4>🎉 Winner!</h4>
+            <div class="winner-name">@_viewModel.SelectedWinner.Name</div>
+        </div>
+    }
+</div>
+
+@code {
+    private WheelOfNamesViewModel _viewModel = null!;
+    private string currentInput = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        _viewModel = new WheelOfNamesViewModel(RandomizerService);
+    }
+
+    private void AddName()
+    {
+        _viewModel.AddEntry(currentInput);
+        currentInput = string.Empty;
+    }
+
+    private void RemoveEntry(WheelEntry entry)
+    {
+        _viewModel.RemoveEntry(entry);
+    }
+
+    private void SpinWheel()
+    {
+        _viewModel.SpinWheel();
+    }
+
+    private void HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            AddName();
+        }
+    }
+}

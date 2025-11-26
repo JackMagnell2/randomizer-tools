@@ -201,3 +201,161 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* ========================================
+   Wheel of Names Page Styles
+   ======================================== */
+
+.wheel-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+}
+
+.wheel-container h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+}
+
+.wheel-container .subtitle {
+    font-size: 1.1rem;
+    color: #6c757d;
+    margin-bottom: 2rem;
+}
+
+/* Input Section */
+.input-section {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.name-input {
+    flex: 1;
+    font-size: 1.1rem;
+    padding: 0.75rem;
+}
+
+.add-btn {
+    padding: 0.75rem 2rem;
+    font-size: 1.1rem;
+    white-space: nowrap;
+}
+
+/* Entries Section */
+.entries-section {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.entries-section h5 {
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 1rem;
+}
+
+.entries-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.entry-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.entry-item:hover {
+    background: #e9ecef;
+}
+
+.entry-item span {
+    font-size: 1.05rem;
+    color: #1a1a1a;
+}
+
+/* Spin Section */
+.spin-section {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.spin-btn {
+    padding: 1rem 3rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+    border-radius: 50px;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    transition: all 0.3s;
+}
+
+.spin-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
+}
+
+/* Winner Section */
+.winner-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+    animation: slideIn 0.5s ease;
+}
+
+.winner-section h4 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.winner-name {
+    font-size: 2.5rem;
+    font-weight: 700;
+    animation: bounce 0.6s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+@media (max-width: 768px) {
+    .wheel-container {
+        padding: 1rem;
+    }
+    
+    .input-section {
+        flex-direction: column;
+    }
+    
+    .add-btn {
+        width: 100%;
+    }
+}
