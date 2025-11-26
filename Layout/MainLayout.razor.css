@@ -1,41 +1,54 @@
+/* Main page layout container */
 .page {
     position: relative;
     display: flex;
     flex-direction: column;
 }
 
+/* Main content area flex growth */
 main {
     flex: 1;
 }
 
+/* Sidebar background - Deep Purple Gradient */
 .sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    background-image: linear-gradient(180deg, #6c5ce7 0%, #2d3436 70%);
 }
 
+/* Top bar styling - Transparent Glass effect */
 .top-row {
-    background-color: #f7f7f7;
-    border-bottom: 1px solid #d6d5d5;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     justify-content: flex-end;
     height: 3.5rem;
     display: flex;
     align-items: center;
 }
 
+/* Top bar link typography */
     .top-row ::deep a, .top-row ::deep .btn-link {
         white-space: nowrap;
         margin-left: 1.5rem;
         text-decoration: none;
+        color: #ffeb3b;
+        font-weight: 700;
+        font-family: 'Fredoka', sans-serif;
     }
 
+/* Top bar link hover effects */
     .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
         text-decoration: underline;
+        color: #fff;
+        text-shadow: 0 0 10px rgba(255, 235, 59, 0.5);
     }
 
+/* Truncate text logic */
     .top-row ::deep a:first-child {
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
+/* Mobile layout adjustments */
 @media (max-width: 640.98px) {
     .top-row {
         justify-content: space-between;
@@ -46,6 +59,7 @@ main {
     }
 }
 
+/* Desktop layout adjustments */
 @media (min-width: 641px) {
     .page {
         flex-direction: row;
@@ -56,12 +70,15 @@ main {
         height: 100vh;
         position: sticky;
         top: 0;
+        box-shadow: 4px 0 20px rgba(0,0,0,0.4);
+        z-index: 100;
     }
 
     .top-row {
         position: sticky;
         top: 0;
         z-index: 1;
+        backdrop-filter: blur(5px);
     }
 
     .top-row.auth ::deep a:first-child {

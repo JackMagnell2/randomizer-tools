@@ -1,3 +1,4 @@
+/* Container for the main landing area header */
 .home-header {
     text-align: center;
     padding: 4rem 2rem 3rem 2rem;
@@ -5,20 +6,24 @@
     margin: 0 auto;
 }
 
+/* Main game title typography */
 .site-title {
-    font-size: 3rem;
+    font-size: 4rem;
     font-weight: 700;
-    color: #1a1a1a;
+    color: #fff;
     margin-bottom: 0.5rem;
-    letter-spacing: -0.02em;
+    font-family: 'Fredoka', sans-serif;
+    text-shadow: 0 4px 0 #2c0b38, 0 0 20px rgba(108, 92, 231, 0.5);
 }
 
+/* Subtitle text styling */
 .site-subtitle {
-    font-size: 1.25rem;
-    color: #6c757d;
-    font-weight: 400;
+    font-size: 1.5rem;
+    color: #a29bfe;
+    font-weight: 600;
 }
 
+/* Grid layout for tool cards */
 .tools-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -28,50 +33,67 @@
     gap: 1.5rem;
 }
 
+/* Individual tool card styling */
 .tool-item {
-    background: white;
-    border: 2px solid #e9ecef;
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
     padding: 2rem;
     text-decoration: none;
-    color: inherit;
-    transition: all 0.2s ease;
+    color: #fff;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     display: block;
+    backdrop-filter: blur(10px);
 }
 
+/* Hover effect for tool cards */
 .tool-item:hover {
-    border-color: #007bff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+    transform: translateY(-8px);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #ffeb3b;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 20px rgba(255, 235, 59, 0.2);
 }
 
+/* Center alignment for card content */
 .tool-content {
     text-align: center;
 }
 
+/* Emoji icon sizing and margin */
 .tool-emoji {
-    font-size: 3rem;
+    font-size: 4rem;
     display: block;
     margin-bottom: 1rem;
+    transition: transform 0.2s;
 }
 
+/* Emoji bounce on hover */
+.tool-item:hover .tool-emoji {
+    transform: scale(1.2) rotate(5deg);
+}
+
+/* Tool title typography */
 .tool-item h3 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #1a1a1a;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #fff;
     margin-bottom: 0.5rem;
+    font-family: 'Fredoka', sans-serif;
 }
 
+/* Tool description text */
 .tool-item p {
-    color: #6c757d;
-    font-size: 1rem;
+    color: #dfe6e9;
+    font-size: 1.1rem;
     margin: 0;
     line-height: 1.5;
+    font-weight: 500;
 }
 
+/* Responsive adjustments for mobile */
 @media (max-width: 768px) {
     .site-title {
-        font-size: 2rem;
+        font-size: 2.5rem;
     }
     
     .tools-container {
