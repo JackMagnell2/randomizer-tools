@@ -213,13 +213,14 @@ window.wheelHelper = {
         return b + c * (tc + -3 * ts + 3 * t);
     },
 
-    // Triggers a visual flash effect on the canvas
+    // Triggers a visual confetti effect on the canvas
     fireConfetti: function() {
-        var baseSize = this.logicalWidth;
-        this.ctx.save();
-        this.ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-        this.ctx.fillRect(0,0, baseSize, baseSize);
-        this.ctx.restore();
-        setTimeout(() => this.draw(), 100);
+        if (typeof confetti === 'function') {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
     }
 };
