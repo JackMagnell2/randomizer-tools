@@ -49,6 +49,36 @@ namespace RandomizerTools.ViewModels
         }
 
         /// <summary>
+        /// Shuffles the entries list randomly
+        /// </summary>
+        public void ShuffleEntries()
+        {
+            if (Entries.Count > 1)
+            {
+                Entries = _randomizer.ShuffleList(Entries);
+            }
+        }
+
+        /// <summary>
+        /// Sorts the entries alphabetically
+        /// </summary>
+        public void SortEntries()
+        {
+            if (Entries.Count > 1)
+            {
+                Entries = Entries.OrderBy(e => e.Name).ToList();
+            }
+        }
+
+        /// <summary>
+        /// Removes all entries from the list
+        /// </summary>
+        public void ClearEntries()
+        {
+            Entries.Clear();
+        }
+
+        /// <summary>
         /// Spins the wheel and selects a random winner
         /// </summary>
         public void SpinWheel()
