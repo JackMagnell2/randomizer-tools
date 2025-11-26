@@ -58,10 +58,33 @@
                             @foreach (var entry in _viewModel.Entries)
                             {
                                 <div class="entry-item">
-                                    <span class="entry-text text-truncate">@entry.Name</span>
-                                    <button class="btn btn-link btn-remove-entry p-0 text-decoration-none" @onclick="() => RemoveEntry(entry)">
-                                        ✕
-                                    </button>
+                                    <div class="entry-name-col">
+                                        <span class="entry-text text-truncate" title="@entry.Name">@entry.Name</span>
+                                    </div>
+                                    
+                                    <div class="entry-controls-col">
+                                        <input type="number" 
+                                               class="weight-input" 
+                                               min="1" 
+                                               @bind="entry.Weight" 
+                                               @bind:after="UpdateWheel"
+                                               title="Weight (higher number = bigger slice)" />
+                                        
+                                        <span class="percentage-label">
+                                            @if (TotalWeight > 0)
+                                            {
+                                                @($"{(double)entry.Weight / TotalWeight * 100:F0}%")
+                                            }
+                                            else
+                                            {
+                                                @("0%")
+                                            }
+                                        </span>
+
+                                        <button class="btn btn-link btn-remove-entry p-0 text-decoration-none" @onclick="() => RemoveEntry(entry)">
+                                            ✕
+                                        </button>
+                                    </div>
                                 </div>
                             }
                         }
@@ -115,6 +138,9 @@
     // Checks if the wheel is allowed to spin
     private bool CanSpin => isSpinning || _viewModel.Entries.Count == 0;
 
+    // Calculates the total weight of all entries
+    private long TotalWeight => _viewModel.Entries.Sum(e => e.Weight);
+
     // Initializes view model and object reference
     protected override void OnInitialized()
     {
@@ -167,7 +193,7 @@
         await UpdateWheel();
     }
 
-    // Shuffles the entries
+    // Shuffles the entries via ViewModel
     private async Task ShuffleEntries()
     {
         _viewModel.ShuffleEntries();
@@ -175,7 +201,7 @@
         await UpdateWheel();
     }
 
-    // Sorts the entries
+    // Sorts the entries via ViewModel
     private async Task SortEntries()
     {
         _viewModel.SortEntries();
@@ -183,7 +209,7 @@
         await UpdateWheel();
     }
 
-    // Clears all entries
+    // Clears all entries via ViewModel
     private async Task ClearAll()
     {
         _viewModel.ClearEntries();
@@ -213,8 +239,8 @@
     // Updates the wheel visualization with current data
     private async Task UpdateWheel()
     {
-        var names = _viewModel.Entries.Select(e => e.Name).ToArray();
-        await JSRuntime.InvokeVoidAsync("wheelHelper.setNames", new object[] { names });
+        var entriesForJs = _viewModel.Entries.Select(e => new { name = e.Name, weight = e.Weight }).ToArray();
+        await JSRuntime.InvokeVoidAsync("wheelHelper.setEntries", new object[] { entriesForJs });
     }
 
     // Initiates the spinning animation
@@ -261,6 +287,10 @@
                 if (loadedEntries != null)
                 {
                     _viewModel.Entries = loadedEntries;
+                    foreach(var entry in _viewModel.Entries)
+                    {
+                        if(entry.Weight < 1) entry.Weight = 1;
+                    }
                     StateHasChanged(); 
                 }
             }

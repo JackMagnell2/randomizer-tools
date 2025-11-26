@@ -11,6 +11,8 @@ namespace RandomizerTools.Models
     public class WheelEntry
     {
         public string Name { get; set; } = string.Empty;
+
+        public int Weight { get; set; } = 10;
         
         public WheelEntry() { }
 
