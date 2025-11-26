@@ -66,9 +66,10 @@
                                         <input type="number" 
                                                class="weight-input" 
                                                min="1" 
+                                               max="1000"
                                                @bind="entry.Weight" 
                                                @bind:after="UpdateWheel"
-                                               title="Weight (higher number = bigger slice)" />
+                                               title="Size (1-100)" />
                                         
                                         <span class="percentage-label">
                                             @if (TotalWeight > 0)
@@ -138,7 +139,7 @@
     // Checks if the wheel is allowed to spin
     private bool CanSpin => isSpinning || _viewModel.Entries.Count == 0;
 
-    // Calculates the total weight of all entries
+    // Calculates the total weight of all entries for percentage math
     private long TotalWeight => _viewModel.Entries.Sum(e => e.Weight);
 
     // Initializes view model and object reference
@@ -173,12 +174,15 @@
         }
     }
 
-    // Adds a new entry to the list
+    // Adds a new entry with default weight of 10
     private async Task AddName()
     {
         if (!string.IsNullOrWhiteSpace(currentInput))
         {
             _viewModel.AddEntry(currentInput);
+            // Ensure newly added entries have a nice default size
+            _viewModel.Entries.Last().Weight = 10; 
+            
             currentInput = string.Empty;
             await SaveEntries();
             await UpdateWheel();
@@ -287,9 +291,10 @@
                 if (loadedEntries != null)
                 {
                     _viewModel.Entries = loadedEntries;
+
                     foreach(var entry in _viewModel.Entries)
                     {
-                        if(entry.Weight < 1) entry.Weight = 1;
+                        if(entry.Weight < 1) entry.Weight = 10;
                     }
                     StateHasChanged(); 
                 }

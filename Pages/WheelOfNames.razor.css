@@ -156,10 +156,10 @@ canvas#wheelCanvas {
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
-/* Entry name text styling */
+/* Entry name column layout */
 .entry-name-col {
     flex-grow: 1;
-    min-width: 0; /* Needed for text-truncate to work in flex child */
+    min-width: 0;
 }
 
 /* Entry text truncation */
@@ -170,7 +170,7 @@ canvas#wheelCanvas {
     display: block;
 }
 
-/* Controls container for weight and remove button */
+/* Controls column layout */
 .entry-controls-col {
     display: flex;
     align-items: center;
@@ -179,7 +179,7 @@ canvas#wheelCanvas {
 
 /* Weight input field styling */
 .weight-input {
-    width: 60px;
+    width: 65px;
     background: rgba(0,0,0,0.3);
     border: 1px solid rgba(255,255,255,0.1);
     color: #fff;
@@ -193,9 +193,10 @@ canvas#wheelCanvas {
 .weight-input:focus {
     outline: none;
     border-color: #ffeb3b;
+    background: rgba(0,0,0,0.5);
 }
 
-/* Hide spinner controls for number input */
+/* Remove numeric spinners */
 .weight-input::-webkit-inner-spin-button, 
 .weight-input::-webkit-outer-spin-button { 
     -webkit-appearance: none; 
@@ -205,9 +206,9 @@ canvas#wheelCanvas {
 /* Percentage label text */
 .percentage-label {
     color: #a29bfe;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 600;
-    min-width: 45px;
+    min-width: 40px;
     text-align: right;
 }
 
