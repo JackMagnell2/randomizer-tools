@@ -68,13 +68,13 @@ window.wheelHelper = {
     setNames: function (namesList) {
         if (!Array.isArray(namesList)) return;
         this.names = namesList;
-        this.arc = Math.PI * 2 / this.names.length;
+        this.arc = Math.PI * 2 / (this.names.length || 1); 
         this.draw();
     },
 
-    // Main rendering loop for wheel slices and text
+    // Main rendering loop for wheel slices, text, and empty state
     draw: function () {
-        if (!this.canvas || !this.names.length) return;
+        if (!this.canvas) return;
 
         var baseSize = this.logicalWidth;
         var outsideRadius = baseSize / 2 - 25; 
@@ -86,6 +86,24 @@ window.wheelHelper = {
 
         this.ctx.strokeStyle = "white";
         this.ctx.lineWidth = 2;
+
+        if (this.names.length === 0) {
+            var dummySegments = 8;
+            var dummyArc = Math.PI * 2 / dummySegments;
+            
+            for (var i = 0; i < dummySegments; i++) {
+                var angle = this.startAngle + i * dummyArc;
+                this.ctx.fillStyle = (i % 2 === 0) ? "#f0f0f0" : "#e0e0e0";
+                this.ctx.beginPath();
+                this.ctx.arc(centerX, centerY, outsideRadius, angle, angle + dummyArc, false);
+                this.ctx.arc(centerX, centerY, insideRadius, angle + dummyArc, angle, true);
+                this.ctx.lineTo(centerX + Math.cos(angle) * outsideRadius, centerY + Math.sin(angle) * outsideRadius);
+                this.ctx.fill();
+                this.ctx.stroke();
+            }
+            this.drawPointer(centerX, outsideRadius);
+            return;
+        }
 
         for (var i = 0; i < this.names.length; i++) {
             var angle = this.startAngle + i * this.arc;
@@ -175,7 +193,7 @@ window.wheelHelper = {
 
     // Resets physics and starts the rotation loop
     spin: function () {
-        if(this.isSpinning) return;
+        if(this.isSpinning || this.names.length === 0) return;
         this.isSpinning = true;
         this.spinArcStart = Math.random() * 20 + 30; 
         this.spinTime = 0;

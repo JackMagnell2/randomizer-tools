@@ -1,4 +1,4 @@
-/* Container */
+/* Invisible layout helper for wheel positioning */
 .wheel-wrapper {
     position: relative;
     width: 100%;
@@ -7,14 +7,69 @@
     margin: 0 auto;
 }
 
-/* The Wheel */
+/* Dropshadow on the canvas elements themselves */
 canvas#wheelCanvas {
     width: 100%;
     height: 100%;
     filter: drop-shadow(0 10px 20px rgba(0,0,0,0.15));
 }
 
-/* Spin Button */
+/* Main container card style */
+.entries-card {
+    border: none;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+/* Card header adjustments */
+.card-header {
+    background: #fff;
+    border-bottom: 2px solid #f8f9fa;
+    padding-top: 1.5rem !important;
+}
+
+/* Container for the input field and button */
+.modern-input-group {
+    background: #f8f9fa;
+    border-radius: 50px;
+    padding: 5px;
+    border: 1px solid #e9ecef;
+    display: flex;
+    transition: all 0.2s;
+}
+
+/* Focus state for the input container */
+.modern-input-group:focus-within {
+    border-color: #36A2EB;
+    box-shadow: 0 0 0 3px rgba(54, 162, 235, 0.1);
+    background: #fff;
+}
+
+/* Input field reset and styling */
+.modern-input {
+    border: none;
+    background: transparent;
+    padding-left: 1.2rem;
+    font-size: 1rem;
+}
+
+/* Input focus state reset */
+.modern-input:focus {
+    box-shadow: none;
+    background: transparent;
+}
+
+/* Add button styling */
+.btn-add {
+    border-radius: 50px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    font-weight: 600;
+}
+
+/* Spin button layout and game feel */
 .spin-btn {
     margin-top: -25px;
     position: relative;
@@ -32,18 +87,21 @@ canvas#wheelCanvas {
     color: white;
 }
 
+/* Spin button active state */
 .spin-btn:active {
     transform: translateY(5px);
     box-shadow: 0 0 0 #1e8449, 0 0 0 rgba(0,0,0,0);
 }
 
+/* Spin button disabled state */
 .spin-btn:disabled {
     background: #bdc3c7;
     box-shadow: none;
     cursor: not-allowed;
+    transform: translateY(5px);
 }
 
-/* Inline Winner Section */
+/* Winner display container */
 .winner-result {
     margin-top: 2rem;
     padding: 2.5rem;
@@ -58,6 +116,7 @@ canvas#wheelCanvas {
     margin-right: auto;
 }
 
+/* Small label above winner name */
 .winner-label {
     color: #95a5a6;
     text-transform: uppercase;
@@ -67,6 +126,7 @@ canvas#wheelCanvas {
     margin-bottom: 0.5rem;
 }
 
+/* Winner name typography */
 .winner-name {
     font-size: 3rem;
     font-weight: 800;
@@ -78,13 +138,14 @@ canvas#wheelCanvas {
     line-height: 1.1;
 }
 
-/* Winner Action Buttons */
+/* Container for winner action buttons */
 .winner-actions {
     display: flex;
     gap: 1rem;
     justify-content: center;
 }
 
+/* Remove button styling */
 .btn-remove-winner {
     border: 2px solid #ff6b6b;
     color: #ff6b6b;
@@ -94,25 +155,29 @@ canvas#wheelCanvas {
     transition: all 0.2s;
 }
 
+/* Remove button hover state */
 .btn-remove-winner:hover {
     background: #ff6b6b;
     color: white;
 }
 
-/* Animations */
+/* Slide up animation keyframes */
 @keyframes slideUp {
     from { opacity: 0; transform: translateY(30px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* List item hover effect */
 .hover-shadow {
-    transition: box-shadow 0.2s;
+    transition: background 0.2s;
 }
 
+/* List item hover active state */
 .hover-shadow:hover {
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    background-color: #e9ecef !important;
 }
 
+/* Font weight utility */
 .fw-500 {
     font-weight: 500;
 }
