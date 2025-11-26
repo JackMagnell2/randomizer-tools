@@ -359,3 +359,56 @@ body {
         width: 100%;
     }
 }
+
+/* Wheel Styles */
+.wheel-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+canvas#wheelCanvas {
+    width: 100%;
+    filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.2));
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+canvas#wheelCanvas:hover {
+    transform: scale(1.02);
+}
+
+.spin-btn {
+    border-radius: 50px;
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: all 0.2s;
+}
+
+.spin-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
+}
+
+.spin-btn:active {
+    transform: translateY(1px);
+}
+
+/* Winner Animation */
+.winner-display {
+    background: #fff;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    border: 2px solid #f0f0f0;
+}
+
+.animate-pop {
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+    0% { opacity: 0; transform: scale(0.5); }
+    100% { opacity: 1; transform: scale(1); }
+}

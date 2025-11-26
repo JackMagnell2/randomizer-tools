@@ -3,92 +3,147 @@
 @using RandomizerTools.Models
 @using RandomizerTools.Services
 @inject RandomizerService RandomizerService
+@inject IJSRuntime JSRuntime
+@implements IDisposable
 
 <PageTitle>Wheel of Names - RandomizerTools</PageTitle>
 
-<div class="wheel-container">
-    <h2>Wheel of Names</h2>
-    <p class="subtitle">Add names and spin the wheel to randomly select a winner!</p>
-
-    <!-- Input Section -->
-    <div class="input-section">
-        <input type="text" 
-               class="form-control name-input" 
-               placeholder="Enter a name..." 
-               @bind="currentInput"
-               @onkeypress="HandleKeyPress" />
-        <button class="btn btn-primary add-btn" @onclick="AddName">Add</button>
-    </div>
-
-    <!-- Entries List -->
-    <div class="entries-section">
-        <h5>Entries (@_viewModel.Entries.Count)</h5>
-        @if (_viewModel.Entries.Count == 0)
-        {
-            <p class="text-muted">No entries yet. Add some names to get started!</p>
-        }
-        else
-        {
-            <div class="entries-list">
-                @foreach (var entry in _viewModel.Entries)
-                {
-                    <div class="entry-item">
-                        <span>@entry.Name</span>
-                        <button class="btn btn-sm btn-danger" @onclick="() => RemoveEntry(entry)">Remove</button>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3>Entries</h3>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Enter name..." 
+                               @bind="currentInput" @onkeypress="HandleKeyPress" />
+                        <button class="btn btn-primary" @onclick="AddName">Add</button>
                     </div>
-                }
+
+                    <div class="list-group list-group-flush overflow-auto" style="max-height: 400px;">
+                        @if (_viewModel.Entries.Count == 0)
+                        {
+                            <div class="text-muted text-center p-3">Add names to start!</div>
+                        }
+                        @foreach (var entry in _viewModel.Entries)
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                @entry.Name
+                                <button class="btn btn-sm btn-outline-danger border-0" 
+                                        @onclick="() => RemoveEntry(entry)">✕</button>
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
-        }
+        </div>
+
+        <div class="col-md-8 text-center">
+            @if (_viewModel.Entries.Count > 0)
+            {
+                <div class="wheel-wrapper">
+                    <canvas id="wheelCanvas"></canvas>
+                </div>
+                
+                <button class="btn btn-success btn-lg mt-4 px-5 fw-bold shadow spin-btn" 
+                        @onclick="SpinWheel" disabled="@isSpinning">
+                    @if(isSpinning) { <span>Spinning...</span> } else { <span>SPIN</span> }
+                </button>
+            }
+            else
+            {
+                <div class="alert alert-info mt-5">
+                    <h4>Ready to spin?</h4>
+                    <p>Add at least one name on the left to generate the wheel.</p>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(winnerText))
+            {
+                <div class="winner-display mt-4 animate-pop">
+                    <div class="text-muted text-uppercase small">Winner</div>
+                    <div class="display-4 fw-bold text-primary">@winnerText</div>
+                </div>
+            }
+        </div>
     </div>
-
-    <!-- Spin Button -->
-    @if (_viewModel.Entries.Count > 0)
-    {
-        <div class="spin-section">
-            <button class="btn btn-success btn-lg spin-btn" @onclick="SpinWheel">🎡 Spin the Wheel!</button>
-        </div>
-    }
-
-    <!-- Winner Display -->
-    @if (_viewModel.SelectedWinner != null)
-    {
-        <div class="winner-section">
-            <h4>🎉 Winner!</h4>
-            <div class="winner-name">@_viewModel.SelectedWinner.Name</div>
-        </div>
-    }
 </div>
 
 @code {
     private WheelOfNamesViewModel _viewModel = null!;
     private string currentInput = string.Empty;
+    private bool isSpinning = false;
+    private string winnerText = "";
+    private DotNetObjectReference<WheelOfNames>? objRef;
 
     protected override void OnInitialized()
     {
         _viewModel = new WheelOfNamesViewModel(RandomizerService);
+        objRef = DotNetObjectReference.Create(this);
     }
 
-    private void AddName()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (firstRender || _viewModel.Entries.Count > 0)
+    {
+        try 
+        {
+            var names = _viewModel.Entries.Select(e => e.Name).ToArray();
+            await JSRuntime.InvokeVoidAsync("wheelHelper.init", "wheelCanvas", objRef);
+            
+            await JSRuntime.InvokeVoidAsync("wheelHelper.setNames", new object[] { names });
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"JS Init Error: {ex.Message}");
+        }
+    }
+}
+
+    private async Task AddName()
+{
+    if (!string.IsNullOrWhiteSpace(currentInput))
     {
         _viewModel.AddEntry(currentInput);
         currentInput = string.Empty;
+        
+        var names = _viewModel.Entries.Select(e => e.Name).ToArray();
+
+        await JSRuntime.InvokeVoidAsync("wheelHelper.setNames", new object[] { names });
+    }
+}
+
+    private async Task RemoveEntry(WheelEntry entry)
+{
+    _viewModel.RemoveEntry(entry);
+    var names = _viewModel.Entries.Select(e => e.Name).ToArray();
+
+    await JSRuntime.InvokeVoidAsync("wheelHelper.setNames", new object[] { names });
+}
+
+    private async Task SpinWheel()
+    {
+        isSpinning = true;
+        winnerText = "";
+        // Trigger JS spin
+        await JSRuntime.InvokeVoidAsync("wheelHelper.spin");
     }
 
-    private void RemoveEntry(WheelEntry entry)
+    [JSInvokable]
+    public void OnSpinFinished(string winnerName)
     {
-        _viewModel.RemoveEntry(entry);
+        isSpinning = false;
+        winnerText = winnerName;
+        StateHasChanged(); // Refresh UI to show winner
     }
 
-    private void SpinWheel()
+    private async Task HandleKeyPress(KeyboardEventArgs e)
     {
-        _viewModel.SpinWheel();
+        if (e.Key == "Enter") await AddName();
     }
 
-    private void HandleKeyPress(KeyboardEventArgs e)
+    public void Dispose()
     {
-        if (e.Key == "Enter")
-        {
-            AddName();
-        }
+        objRef?.Dispose();
     }
 }
