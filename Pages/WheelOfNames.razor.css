@@ -1,25 +1,22 @@
+/* Container */
 .wheel-wrapper {
     position: relative;
     width: 100%;
     max-width: 600px;
     aspect-ratio: 1 / 1;
     margin: 0 auto;
-    background: radial-gradient(circle at center, #ffffff 0%, #f0f0f0 100%);
-    border-radius: 50%;
-    box-shadow: 
-        0 0 0 10px rgba(255,255,255,0.5),
-        0 0 20px rgba(0,0,0,0.2);
-    padding: 10px;
 }
 
+/* The Wheel */
 canvas#wheelCanvas {
     width: 100%;
     height: 100%;
-    border-radius: 50%;
+    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.15));
 }
 
+/* Spin Button */
 .spin-btn {
-    margin-top: -30px;
+    margin-top: -25px;
     position: relative;
     z-index: 10;
     font-size: 1.5rem;
@@ -46,53 +43,66 @@ canvas#wheelCanvas {
     cursor: not-allowed;
 }
 
-.winner-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(5px);
-    animation: fadeIn 0.3s;
-}
-
-.winner-card {
+/* Inline Winner Section */
+.winner-result {
+    margin-top: 2rem;
+    padding: 2.5rem;
     background: white;
-    padding: 3rem;
-    border-radius: 20px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
     text-align: center;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    min-width: 300px;
+    border: 1px solid #f0f0f0;
+    animation: slideUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-.winner-card h2 {
-    color: #7f8c8d;
+.winner-label {
+    color: #95a5a6;
     text-transform: uppercase;
-    font-size: 1rem;
     letter-spacing: 2px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
 }
 
-.winner-card .winner-name {
-    font-size: 3.5rem;
+.winner-name {
+    font-size: 3rem;
     font-weight: 800;
     background: linear-gradient(45deg, #FF6384, #36A2EB);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    margin: 1rem 0;
+    margin-bottom: 2rem;
+    line-height: 1.1;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+/* Winner Action Buttons */
+.winner-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
 }
 
-@keyframes popIn {
-    0% { opacity: 0; transform: scale(0.5); }
-    100% { opacity: 1; transform: scale(1); }
+.btn-remove-winner {
+    border: 2px solid #ff6b6b;
+    color: #ff6b6b;
+    background: transparent;
+    font-weight: 600;
+    padding: 0.5rem 1.5rem;
+    transition: all 0.2s;
+}
+
+.btn-remove-winner:hover {
+    background: #ff6b6b;
+    color: white;
+}
+
+/* Animations */
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .hover-shadow {

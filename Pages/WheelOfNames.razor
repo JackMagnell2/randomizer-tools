@@ -64,6 +64,23 @@
                     <button class="btn btn-success spin-btn" @onclick="SpinWheel" disabled="@isSpinning">
                         @if(isSpinning) { <span>Spinning...</span> } else { <span>SPIN!</span> }
                     </button>
+
+                    @if (showWinner)
+                    {
+                        <div class="winner-result">
+                            <div class="winner-label">Winner</div>
+                            <div class="winner-name">@winnerText</div>
+                            
+                            <div class="winner-actions">
+                                <button class="btn btn-remove-winner rounded-pill" @onclick="RemoveWinner">
+                                    Remove & Close
+                                </button>
+                                <button class="btn btn-primary rounded-pill px-4" @onclick="CloseWinner">
+                                    Keep & Close
+                                </button>
+                            </div>
+                        </div>
+                    }
                 }
                 else
                 {
@@ -78,22 +95,11 @@
     </div>
 </div>
 
-@if (showWinnerModal)
-{
-    <div class="winner-overlay" @onclick="CloseModal">
-        <div class="winner-card" @onclick:stopPropagation>
-            <h2>We have a winner!</h2>
-            <div class="winner-name">@winnerText</div>
-            <button class="btn btn-primary btn-lg px-5 rounded-pill" @onclick="CloseModal">Close</button>
-        </div>
-    </div>
-}
-
 @code {
     private WheelOfNamesViewModel _viewModel = null!;
     private string currentInput = string.Empty;
     private bool isSpinning = false;
-    private bool showWinnerModal = false;
+    private bool showWinner = false;
     private string winnerText = "";
     private DotNetObjectReference<WheelOfNames>? objRef;
 
@@ -131,6 +137,22 @@
         await UpdateWheel();
     }
 
+    private async Task RemoveWinner()
+    {
+        var winnerEntry = _viewModel.Entries.FirstOrDefault(e => e.Name == winnerText);
+        if (winnerEntry != null)
+        {
+            _viewModel.RemoveEntry(winnerEntry);
+            showWinner = false;
+            await UpdateWheel();
+        }
+    }
+
+    private void CloseWinner()
+    {
+        showWinner = false;
+    }
+
     private async Task UpdateWheel()
     {
         var names = _viewModel.Entries.Select(e => e.Name).ToArray();
@@ -140,7 +162,7 @@
     private async Task SpinWheel()
     {
         isSpinning = true;
-        showWinnerModal = false;
+        showWinner = false;
         await JSRuntime.InvokeVoidAsync("wheelHelper.spin");
     }
 
@@ -149,13 +171,8 @@
     {
         isSpinning = false;
         winnerText = winnerName;
-        showWinnerModal = true;
+        showWinner = true;
         StateHasChanged();
-    }
-    
-    private void CloseModal()
-    {
-        showWinnerModal = false;
     }
 
     private async Task HandleKeyPress(KeyboardEventArgs e)

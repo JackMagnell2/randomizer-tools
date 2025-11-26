@@ -55,9 +55,7 @@ window.wheelHelper = {
     },
 
     setNames: function (namesList) {
-        if (!Array.isArray(namesList)) {
-            return;
-        }
+        if (!Array.isArray(namesList)) return;
         this.names = namesList;
         this.arc = Math.PI * 2 / this.names.length;
         this.draw();
@@ -67,7 +65,8 @@ window.wheelHelper = {
         if (!this.canvas || !this.names.length) return;
 
         var baseSize = this.logicalWidth;
-        var outsideRadius = baseSize / 2 - 15;
+        // INCREASED PADDING: Was -15, now -25 to give room for arrow/button
+        var outsideRadius = baseSize / 2 - 25; 
         var insideRadius = 0;
         var centerX = baseSize / 2;
         var centerY = baseSize / 2;
@@ -93,22 +92,36 @@ window.wheelHelper = {
             this.ctx.translate(centerX, centerY);
             
             var textAngle = angle + this.arc / 2;
-            this.ctx.rotate(textAngle);
             
-            this.ctx.translate(outsideRadius - 10, 0); 
+            if (this.names.length === 1) {
+                this.ctx.rotate(0);
+                this.ctx.translate(0, 0); 
+                this.ctx.textAlign = "center";
+            } else {
+                this.ctx.rotate(textAngle);
+                // INCREASED TEXT PADDING: Was -10, now -30 to push text away from edge
+                this.ctx.translate(outsideRadius - 30, 0); 
+                this.ctx.textAlign = "right";
+            }
 
             this.ctx.fillStyle = "white";
             this.ctx.shadowColor = "rgba(0,0,0,0.5)";
             this.ctx.shadowBlur = 4;
             this.ctx.textBaseline = "middle";
-            this.ctx.textAlign = "right";
-
+            
             var text = this.names[i];
             
             var maxFont = baseSize / 15;
             var minFont = 10;
-            var radiusSpace = outsideRadius - insideRadius - 30;
+            // Limit text space
+            var radiusSpace = outsideRadius - insideRadius - 40;
             
+            if (this.names.length === 1) {
+                // Cap single name size so it isn't huge
+                radiusSpace = outsideRadius * 1.5;
+                if (maxFont > 40) maxFont = 40; 
+            }
+
             this.ctx.font = 'bold ' + maxFont + 'px Helvetica, Arial';
             var width = this.ctx.measureText(text).width;
             
@@ -132,9 +145,10 @@ window.wheelHelper = {
         this.ctx.shadowColor = "rgba(0,0,0,0.3)";
         this.ctx.shadowBlur = 5;
         this.ctx.beginPath();
-        this.ctx.moveTo(centerX - 20, 5); 
-        this.ctx.lineTo(centerX + 20, 5);
-        this.ctx.lineTo(centerX, 45);
+        // Make the arrow slightly larger and overlap the wheel edge slightly
+        this.ctx.moveTo(centerX - 25, 5); 
+        this.ctx.lineTo(centerX + 25, 5);
+        this.ctx.lineTo(centerX, 55); // Longer tip to reach the shrunk wheel
         this.ctx.fill();
         this.ctx.restore();
     },
@@ -142,9 +156,14 @@ window.wheelHelper = {
     spin: function () {
         if(this.isSpinning) return;
         this.isSpinning = true;
-        this.spinArcStart = Math.random() * 10 + 10;
+        
+        // PHYSICS UPDATE
+        // Start Speed: Was 10-20. Now 30-50 (Much faster start)
+        this.spinArcStart = Math.random() * 20 + 30; 
         this.spinTime = 0;
-        this.spinTimeTotal = Math.random() * 3000 + 4 * 1000; 
+        // Duration: Was 4-7s. Now 6-9s (Longer suspense)
+        this.spinTimeTotal = Math.random() * 3000 + 6000; 
+        
         this.rotateWheel();
     },
 
@@ -170,9 +189,7 @@ window.wheelHelper = {
         
         this.isSpinning = false;
         var winnerName = this.names[index];
-        
         this.fireConfetti();
-        
         this.dotNetRef.invokeMethodAsync('OnSpinFinished', winnerName);
     },
 
