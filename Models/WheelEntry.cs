@@ -10,7 +10,7 @@ namespace RandomizerTools.Models
     /// </summary>
     public class WheelEntry
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         
         public WheelEntry() { }
 

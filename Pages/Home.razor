@@ -1,7 +1,149 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>RandomizerTools - Fast & Simple Randomizer Tools</PageTitle>
 
-<h1>Hello, world!</h1>
+<!-- Clean Header -->
+<div class="home-header">
+    <h1 class="site-title">RandomizerTools</h1>
+    <p class="site-subtitle">Fast, simple, and free randomizer tools for everyday use</p>
+</div>
 
-Welcome to your new app.
+<!-- Tools Grid - Clean & Minimal -->
+<div class="tools-container">
+    
+    <a href="/wheel" class="tool-item">
+        <div class="tool-content">
+            <span class="tool-emoji">🎡</span>
+            <h3>Wheel of Names</h3>
+            <p>Randomly select from a list of names</p>
+        </div>
+    </a>
+
+    <a href="/coin" class="tool-item">
+        <div class="tool-content">
+            <span class="tool-emoji">🪙</span>
+            <h3>Coin Flip</h3>
+            <p>Simple heads or tails decision maker</p>
+        </div>
+    </a>
+
+    <a href="/dice" class="tool-item">
+        <div class="tool-content">
+            <span class="tool-emoji">🎲</span>
+            <h3>Dice Roller</h3>
+            <p>Roll dice with any number of sides</p>
+        </div>
+    </a>
+
+    <a href="/number" class="tool-item">
+        <div class="tool-content">
+            <span class="tool-emoji">🔢</span>
+            <h3>Number Generator</h3>
+            <p>Generate random numbers in any range</p>
+        </div>
+    </a>
+
+    <a href="/teams" class="tool-item">
+        <div class="tool-content">
+            <span class="tool-emoji">👥</span>
+            <h3>Team Generator</h3>
+            <p>Split lists into balanced random teams</p>
+        </div>
+    </a>
+
+    <a href="/shuffle" class="tool-item">
+        <div class="tool-content">
+            <span class="tool-emoji">🔀</span>
+            <h3>List Shuffler</h3>
+            <p>Randomly shuffle any list of items</p>
+        </div>
+    </a>
+
+</div>
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .home-header {
+        text-align: center;
+        padding: 4rem 2rem 3rem 2rem;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .site-title {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.02em;
+    }
+
+    .site-subtitle {
+        font-size: 1.25rem;
+        color: #6c757d;
+        font-weight: 400;
+    }
+
+    .tools-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem 4rem 2rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .tool-item {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 2rem;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.2s ease;
+        display: block;
+    }
+
+    .tool-item:hover {
+        border-color: #007bff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+    }
+
+    .tool-content {
+        text-align: center;
+    }
+
+    .tool-emoji {
+        font-size: 3rem;
+        display: block;
+        margin-bottom: 1rem;
+    }
+
+    .tool-item h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
+    }
+
+    .tool-item p {
+        color: #6c757d;
+        font-size: 1rem;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    @@media (max-width: 768px) {
+        .site-title {
+            font-size: 2rem;
+        }
+        
+        .tools-container {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

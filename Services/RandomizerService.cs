@@ -2,8 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Random;
-using System.Security.Cryptography.RandomNumberGenerator;
+using System.Security.Cryptography;
 
 namespace RandomizerTools.Services
 {
