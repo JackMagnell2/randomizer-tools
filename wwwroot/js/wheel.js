@@ -15,13 +15,21 @@ window.wheelHelper = {
     spinTimeTotal: 0,
     dotNetRef: null,
     isSpinning: false,
+    tickAudio: null,
+    winAudio: null,
+    lastIndex: -1,
+    arrowOffset: 0,
 
-    // Initializes the canvas, context, and resize listeners
+    // Initializes canvas, audio context, and resize listeners
     init: function (canvasId, dotNetReference) {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext("2d");
         this.dotNetRef = dotNetReference;
         
+        this.tickAudio = new Audio('sounds/tick.mp3');
+        this.winAudio = new Audio('sounds/win.mp3');
+        this.tickAudio.playbackRate = 1; 
+
         var dpr = window.devicePixelRatio || 1;
         var rect = this.canvas.getBoundingClientRect();
         this.canvas.width = rect.width * dpr;
@@ -38,7 +46,7 @@ window.wheelHelper = {
         this.resize(); 
     },
 
-    // Handles responsive resizing of the canvas element
+    // Handles responsive resizing of the canvas
     resize: function() {
         if(!this.canvas) return;
         var container = this.canvas.parentElement;
@@ -64,7 +72,7 @@ window.wheelHelper = {
         this.draw();
     },
 
-    // Main rendering loop for the wheel, slices, and text
+    // Main rendering loop for wheel slices and text
     draw: function () {
         if (!this.canvas || !this.names.length) return;
 
@@ -111,21 +119,13 @@ window.wheelHelper = {
             this.ctx.textBaseline = "middle";
             
             var text = this.names[i];
-            if (text.length > 15) {
-                text = text.substring(0, 15) + "...";
-            }
+            if (text.length > 15) text = text.substring(0, 15) + "...";
 
             var maxFont = baseSize / 15;
-            
-            if (this.names.length > 8) {
-                maxFont = baseSize / 22; 
-            }
-            if (this.names.length > 12) {
-                maxFont = baseSize / 28;
-            }
+            if (this.names.length > 8) maxFont = baseSize / 22; 
+            if (this.names.length > 12) maxFont = baseSize / 28;
 
             var minFont = 10;
-
             var safeCenterZone = outsideRadius * 0.25; 
             var radiusSpace = outsideRadius - 30 - safeCenterZone;
             
@@ -137,8 +137,8 @@ window.wheelHelper = {
 
             this.ctx.font = 'bold ' + maxFont + 'px Helvetica, Arial';
             var width = this.ctx.measureText(text).width;
-            
             var currentFont = maxFont;
+            
             while (width > radiusSpace && currentFont > minFont) {
                 currentFont -= 1;
                 this.ctx.font = 'bold ' + currentFont + 'px Helvetica, Arial';
@@ -152,9 +152,16 @@ window.wheelHelper = {
         this.drawPointer(centerX, outsideRadius);
     },
 
-    // Draws the static indicator arrow at the top
+    // Draws the animated pointer with physics offset
     drawPointer: function(centerX, radius) {
         this.ctx.save();
+        
+        this.ctx.translate(centerX, 5);
+        this.ctx.rotate(this.arrowOffset);
+        this.ctx.translate(-centerX, -5);
+
+        this.arrowOffset *= 0.9;
+
         this.ctx.fillStyle = "#333";
         this.ctx.shadowColor = "rgba(0,0,0,0.3)";
         this.ctx.shadowBlur = 5;
@@ -166,19 +173,18 @@ window.wheelHelper = {
         this.ctx.restore();
     },
 
-    // Sets initial physics parameters and starts the animation loop
+    // Resets physics and starts the rotation loop
     spin: function () {
         if(this.isSpinning) return;
         this.isSpinning = true;
-        
         this.spinArcStart = Math.random() * 20 + 30; 
         this.spinTime = 0;
         this.spinTimeTotal = Math.random() * 3000 + 6000; 
-        
+        this.lastIndex = -1; 
         this.rotateWheel();
     },
 
-    // Animation frame loop handling rotation and deceleration
+    // Animation loop handling rotation, audio triggers, and pointer physics
     rotateWheel: function () {
         this.spinTime += 30;
         if (this.spinTime >= this.spinTimeTotal) {
@@ -188,11 +194,30 @@ window.wheelHelper = {
         
         var spinAngle = this.spinArcStart - this.easeOut(this.spinTime, 0, this.spinArcStart, this.spinTimeTotal);
         this.startAngle += (spinAngle * Math.PI / 180);
+        
+        var degrees = this.startAngle * 180 / Math.PI + 90;
+        var arcd = this.arc * 180 / Math.PI;
+        var currentIndex = Math.floor((360 - degrees % 360) / arcd);
+
+        if (this.lastIndex !== -1 && this.lastIndex !== currentIndex) {
+            this.playTick();
+            this.arrowOffset = -0.3;
+        }
+        this.lastIndex = currentIndex;
+
         this.draw();
         this.spinTimeout = setTimeout(() => this.rotateWheel(), 30);
     },
 
-    // Finalizes the spin, determines the winner, and triggers callbacks
+    // Plays the tick sound effect
+    playTick: function() {
+        if (this.tickAudio) {
+            this.tickAudio.currentTime = 0;
+            this.tickAudio.play().catch(e => {}); 
+        }
+    },
+
+    // Finalizes the spin, plays win sound, and triggers confetti
     stopRotateWheel: function () {
         clearTimeout(this.spinTimeout);
         
@@ -202,24 +227,31 @@ window.wheelHelper = {
         
         this.isSpinning = false;
         var winnerName = this.names[index];
+        
+        if (this.winAudio) {
+            this.winAudio.currentTime = 0;
+            this.winAudio.play().catch(e => {});
+        }
+
         this.fireConfetti();
         this.dotNetRef.invokeMethodAsync('OnSpinFinished', winnerName);
     },
 
-    // Quadratic easing function for smooth deceleration
+    // Quadratic easing for smooth deceleration
     easeOut: function (t, b, c, d) {
         var ts = (t /= d) * t;
         var tc = ts * t;
         return b + c * (tc + -3 * ts + 3 * t);
     },
 
-    // Triggers a visual confetti effect on the canvas
+    // Triggers canvas confetti explosion
     fireConfetti: function() {
         if (typeof confetti === 'function') {
             confetti({
-                particleCount: 100,
+                particleCount: 150,
                 spread: 70,
-                origin: { y: 0.6 }
+                origin: { y: 0.6 },
+                colors: this.colors
             });
         }
     }
