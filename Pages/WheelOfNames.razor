@@ -2,6 +2,7 @@
 @using RandomizerTools.ViewModels
 @using RandomizerTools.Models
 @using RandomizerTools.Services
+@using System.Text.Json
 @inject RandomizerService RandomizerService
 @inject IJSRuntime JSRuntime
 @implements IDisposable
@@ -9,31 +10,31 @@
 <PageTitle>Wheel of Names - RandomizerTools</PageTitle>
 
 <div class="container py-4">
-    <div class="row g-4">
+    <div class="row g-4 align-items-start">
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+            <div class="card entries-card h-100">
+                <div class="card-header border-bottom-0 pt-4 pb-0">
                     <h3 class="fw-bold text-dark mb-0">Entries</h3>
                     <small class="text-muted">@_viewModel.Entries.Count items</small>
                 </div>
                 <div class="card-body d-flex flex-column">
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control form-control-lg" 
+                    <div class="input-group modern-input-group mb-3">
+                        <input type="text" class="form-control modern-input" 
                                placeholder="Add an entry..." 
                                @bind="currentInput" 
                                @bind:event="oninput"
                                @onkeypress="HandleKeyPress" />
-                        <button class="btn btn-primary" @onclick="AddName">
-                            <span class="bi bi-plus-lg"></span> Add
+                        <button class="btn btn-primary btn-add" @onclick="AddName">
+                            Add
                         </button>
                     </div>
 
                     <div class="entries-list flex-grow-1 overflow-auto pe-2" style="max-height: 50vh;">
                         @if (_viewModel.Entries.Count == 0)
                         {
-                            <div class="text-center text-muted mt-5">
+                            <div class="text-center text-muted mt-5 opacity-50">
                                 <span class="fs-1">📝</span>
-                                <p>No entries yet.<br>Add some names to begin!</p>
+                                <p class="mt-2 small">List is empty.</p>
                             </div>
                         }
                         else
@@ -42,8 +43,8 @@
                             {
                                 <div class="d-flex justify-content-between align-items-center p-2 mb-2 bg-light rounded hover-shadow">
                                     <span class="fw-500 text-truncate pe-2">@entry.Name</span>
-                                    <button class="btn btn-link text-danger p-0" @onclick="() => RemoveEntry(entry)">
-                                        <small>Remove</small>
+                                    <button class="btn btn-link text-danger p-0 text-decoration-none" @onclick="() => RemoveEntry(entry)">
+                                        <small>✕</small>
                                     </button>
                                 </div>
                             }
@@ -55,38 +56,28 @@
 
         <div class="col-lg-8">
             <div class="d-flex flex-column align-items-center justify-content-center h-100">
-                @if (_viewModel.Entries.Count > 0)
-                {
-                    <div class="wheel-wrapper">
-                        <canvas id="wheelCanvas"></canvas>
-                    </div>
-                    
-                    <button class="btn btn-success spin-btn" @onclick="SpinWheel" disabled="@isSpinning">
-                        @if(isSpinning) { <span>Spinning...</span> } else { <span>SPIN!</span> }
-                    </button>
+                
+                <div class="wheel-wrapper">
+                    <canvas id="wheelCanvas"></canvas>
+                </div>
+                
+                <button class="btn btn-success spin-btn" @onclick="SpinWheel" disabled="@CanSpin">
+                    @if(isSpinning) { <span>Spinning...</span> } else { <span>SPIN!</span> }
+                </button>
 
-                    @if (showWinner)
-                    {
-                        <div class="winner-result">
-                            <div class="winner-label">Winner</div>
-                            <div class="winner-name">@winnerText</div>
-                            
-                            <div class="winner-actions">
-                                <button class="btn btn-remove-winner rounded-pill" @onclick="RemoveWinner">
-                                    Remove & Close
-                                </button>
-                                <button class="btn btn-primary rounded-pill px-4" @onclick="CloseWinner">
-                                    Keep & Close
-                                </button>
-                            </div>
-                        </div>
-                    }
-                }
-                else
+                @if (showWinner)
                 {
-                    <div class="text-center text-muted opacity-50 mt-5">
-                        <div style="width: 300px; height: 300px; border-radius: 50%; border: 4px dashed #ccc; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                            Wheel Preview
+                    <div class="winner-result">
+                        <div class="winner-label">Winner</div>
+                        <div class="winner-name">@winnerText</div>
+                        
+                        <div class="winner-actions">
+                            <button class="btn btn-remove-winner rounded-pill" @onclick="RemoveWinner">
+                                Remove & Close
+                            </button>
+                            <button class="btn btn-primary rounded-pill px-4" @onclick="CloseWinner">
+                                Keep & Close
+                            </button>
                         </div>
                     </div>
                 }
@@ -101,42 +92,66 @@
     private bool isSpinning = false;
     private bool showWinner = false;
     private string winnerText = "";
+    private bool _isWheelInit = false; 
     private DotNetObjectReference<WheelOfNames>? objRef;
+    private const string LocalStorageKey = "wheel_entries";
 
+    // Checks if the wheel is allowed to spin
+    private bool CanSpin => isSpinning || _viewModel.Entries.Count == 0;
+
+    // Initializes view model and object reference
     protected override void OnInitialized()
     {
         _viewModel = new WheelOfNamesViewModel(RandomizerService);
         objRef = DotNetObjectReference.Create(this);
     }
 
+    // Handles asynchronous initialization after render
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender || _viewModel.Entries.Count > 0)
+        if (firstRender)
         {
-            try {
-                var names = _viewModel.Entries.Select(e => e.Name).ToArray();
-                await JSRuntime.InvokeVoidAsync("wheelHelper.init", "wheelCanvas", objRef);
-                await JSRuntime.InvokeVoidAsync("wheelHelper.setNames", new object[] { names });
-            } catch { }
+            await LoadEntries();
+            await InitWheel();
         }
     }
 
+    // Initializes the JavaScript wheel interface
+    private async Task InitWheel()
+    {
+        if (!_isWheelInit)
+        {
+            try 
+            {
+                await JSRuntime.InvokeVoidAsync("wheelHelper.init", "wheelCanvas", objRef);
+                await UpdateWheel();
+                _isWheelInit = true;
+            }
+            catch { }
+        }
+    }
+
+    // Adds a new entry to the list
     private async Task AddName()
     {
         if (!string.IsNullOrWhiteSpace(currentInput))
         {
             _viewModel.AddEntry(currentInput);
             currentInput = string.Empty;
+            await SaveEntries();
             await UpdateWheel();
         }
     }
 
+    // Removes a specific entry from the list
     private async Task RemoveEntry(WheelEntry entry)
     {
         _viewModel.RemoveEntry(entry);
+        await SaveEntries();
         await UpdateWheel();
     }
 
+    // Removes the winner and closes the display
     private async Task RemoveWinner()
     {
         var winnerEntry = _viewModel.Entries.FirstOrDefault(e => e.Name == winnerText);
@@ -144,28 +159,34 @@
         {
             _viewModel.RemoveEntry(winnerEntry);
             showWinner = false;
+            await SaveEntries();
             await UpdateWheel();
         }
     }
 
+    // Closes the winner display without removing
     private void CloseWinner()
     {
         showWinner = false;
     }
 
+    // Updates the wheel visualization with current data
     private async Task UpdateWheel()
     {
         var names = _viewModel.Entries.Select(e => e.Name).ToArray();
         await JSRuntime.InvokeVoidAsync("wheelHelper.setNames", new object[] { names });
     }
 
+    // Initiates the spinning animation
     private async Task SpinWheel()
     {
+        if (_viewModel.Entries.Count == 0) return;
         isSpinning = true;
         showWinner = false;
         await JSRuntime.InvokeVoidAsync("wheelHelper.spin");
     }
 
+    // Callback invoked when spinning completes
     [JSInvokable]
     public void OnSpinFinished(string winnerName)
     {
@@ -175,11 +196,39 @@
         StateHasChanged();
     }
 
+    // Handles keyboard input for adding entries
     private async Task HandleKeyPress(KeyboardEventArgs e)
     {
         if (e.Key == "Enter") await AddName();
     }
 
+    // Saves current entries to local storage
+    private async Task SaveEntries()
+    {
+        var json = JsonSerializer.Serialize(_viewModel.Entries);
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", LocalStorageKey, json);
+    }
+
+    // Loads entries from local storage
+    private async Task LoadEntries()
+    {
+        var json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", LocalStorageKey);
+        if (!string.IsNullOrEmpty(json))
+        {
+            try 
+            {
+                var loadedEntries = JsonSerializer.Deserialize<List<WheelEntry>>(json);
+                if (loadedEntries != null)
+                {
+                    _viewModel.Entries = loadedEntries;
+                    StateHasChanged(); 
+                }
+            }
+            catch { }
+        }
+    }
+
+    // Disposes the object reference
     public void Dispose()
     {
         objRef?.Dispose();
