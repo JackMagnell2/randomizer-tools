@@ -13,11 +13,12 @@
     <div class="row g-4 align-items-start">
         <div class="col-lg-4">
             <div class="card entries-card h-100">
-                <div class="card-header border-bottom-0">
+                <div class="card-header border-bottom-0 pt-4 pb-0">
                     <h3 class="fw-bold mb-0">Entries</h3>
                     <small>@_viewModel.Entries.Count items</small>
                 </div>
                 <div class="card-body d-flex flex-column">
+                    
                     <div class="input-group modern-input-group mb-3">
                         <input type="text" class="form-control modern-input" 
                                placeholder="Type a name..." 
@@ -28,6 +29,21 @@
                             Add
                         </button>
                     </div>
+
+                    @if (_viewModel.Entries.Count > 0)
+                    {
+                        <div class="toolbar">
+                            <button class="btn btn-tool" @onclick="ShuffleEntries" title="Shuffle List">
+                                <i class="bi bi-shuffle"></i> Shuffle
+                            </button>
+                            <button class="btn btn-tool" @onclick="SortEntries" title="Sort A-Z">
+                                <i class="bi bi-sort-alpha-down"></i> Sort
+                            </button>
+                            <button class="btn btn-tool" @onclick="ClearAll" title="Clear All">
+                                <i class="bi bi-trash"></i> Clear
+                            </button>
+                        </div>
+                    }
 
                     <div class="entries-list flex-grow-1 overflow-auto pe-2" style="max-height: 50vh;">
                         @if (_viewModel.Entries.Count == 0)
@@ -42,10 +58,34 @@
                             @foreach (var entry in _viewModel.Entries)
                             {
                                 <div class="entry-item">
-                                    <span class="entry-text text-truncate">@entry.Name</span>
-                                    <button class="btn btn-link btn-remove-entry p-0 text-decoration-none" @onclick="() => RemoveEntry(entry)">
-                                        ✕
-                                    </button>
+                                    <div class="entry-name-col">
+                                        <span class="entry-text text-truncate" title="@entry.Name">@entry.Name</span>
+                                    </div>
+                                    
+                                    <div class="entry-controls-col">
+                                        <input type="number" 
+                                               class="weight-input" 
+                                               min="1" 
+                                               max="1000"
+                                               @bind="entry.Weight" 
+                                               @bind:after="UpdateWheel"
+                                               title="Size (1-100)" />
+                                        
+                                        <span class="percentage-label">
+                                            @if (TotalWeight > 0)
+                                            {
+                                                @($"{(double)entry.Weight / TotalWeight * 100:F0}%")
+                                            }
+                                            else
+                                            {
+                                                @("0%")
+                                            }
+                                        </span>
+
+                                        <button class="btn btn-link btn-remove-entry p-0 text-decoration-none" @onclick="() => RemoveEntry(entry)">
+                                            ✕
+                                        </button>
+                                    </div>
                                 </div>
                             }
                         }
@@ -99,6 +139,9 @@
     // Checks if the wheel is allowed to spin
     private bool CanSpin => isSpinning || _viewModel.Entries.Count == 0;
 
+    // Calculates the total weight of all entries for percentage math
+    private long TotalWeight => _viewModel.Entries.Sum(e => e.Weight);
+
     // Initializes view model and object reference
     protected override void OnInitialized()
     {
@@ -131,12 +174,15 @@
         }
     }
 
-    // Adds a new entry to the list
+    // Adds a new entry with default weight of 10
     private async Task AddName()
     {
         if (!string.IsNullOrWhiteSpace(currentInput))
         {
             _viewModel.AddEntry(currentInput);
+            // Ensure newly added entries have a nice default size
+            _viewModel.Entries.Last().Weight = 10; 
+            
             currentInput = string.Empty;
             await SaveEntries();
             await UpdateWheel();
@@ -147,6 +193,30 @@
     private async Task RemoveEntry(WheelEntry entry)
     {
         _viewModel.RemoveEntry(entry);
+        await SaveEntries();
+        await UpdateWheel();
+    }
+
+    // Shuffles the entries via ViewModel
+    private async Task ShuffleEntries()
+    {
+        _viewModel.ShuffleEntries();
+        await SaveEntries();
+        await UpdateWheel();
+    }
+
+    // Sorts the entries via ViewModel
+    private async Task SortEntries()
+    {
+        _viewModel.SortEntries();
+        await SaveEntries();
+        await UpdateWheel();
+    }
+
+    // Clears all entries via ViewModel
+    private async Task ClearAll()
+    {
+        _viewModel.ClearEntries();
         await SaveEntries();
         await UpdateWheel();
     }
@@ -173,8 +243,8 @@
     // Updates the wheel visualization with current data
     private async Task UpdateWheel()
     {
-        var names = _viewModel.Entries.Select(e => e.Name).ToArray();
-        await JSRuntime.InvokeVoidAsync("wheelHelper.setNames", new object[] { names });
+        var entriesForJs = _viewModel.Entries.Select(e => new { name = e.Name, weight = e.Weight }).ToArray();
+        await JSRuntime.InvokeVoidAsync("wheelHelper.setEntries", new object[] { entriesForJs });
     }
 
     // Initiates the spinning animation
@@ -221,6 +291,11 @@
                 if (loadedEntries != null)
                 {
                     _viewModel.Entries = loadedEntries;
+
+                    foreach(var entry in _viewModel.Entries)
+                    {
+                        if(entry.Weight < 1) entry.Weight = 10;
+                    }
                     StateHasChanged(); 
                 }
             }
