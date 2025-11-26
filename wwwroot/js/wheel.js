@@ -4,7 +4,8 @@ window.wheelHelper = {
     names: [],
     colors: [
         "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40",
-        "#E7E9ED", "#5352ed", "#ff4757", "#2ed573", "#1e90ff", "#ffa502"
+        "#E7E9ED", "#5352ed", "#ff4757", "#2ed573", "#1e90ff", "#ffa502",
+        "#DAF7A6", "#FFC300", "#C70039", "#900C3F", "#581845"
     ],
     startAngle: 0,
     arc: 0,
@@ -12,27 +13,51 @@ window.wheelHelper = {
     spinArcStart: 10,
     spinTime: 0,
     spinTimeTotal: 0,
-    ctx: null,
     dotNetRef: null,
+    isSpinning: false,
 
     init: function (canvasId, dotNetReference) {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext("2d");
         this.dotNetRef = dotNetReference;
-        this.resize();
-        window.addEventListener('resize', () => this.resize());
+        
+        var dpr = window.devicePixelRatio || 1;
+        var rect = this.canvas.getBoundingClientRect();
+        this.canvas.width = rect.width * dpr;
+        this.canvas.height = rect.width * dpr;
+        this.ctx.scale(dpr, dpr);
+        
+        this.logicalWidth = rect.width;
+        this.logicalHeight = rect.width;
+
+        window.removeEventListener('resize', this.resizeHandler);
+        this.resizeHandler = () => this.resize();
+        window.addEventListener('resize', this.resizeHandler);
+        
+        this.resize(); 
     },
 
     resize: function() {
         if(!this.canvas) return;
-
         var container = this.canvas.parentElement;
-        this.canvas.width = container.clientWidth;
-        this.canvas.height = container.clientWidth;
+        var newWidth = container.clientWidth;
+        
+        var dpr = window.devicePixelRatio || 1;
+        this.canvas.style.width = newWidth + "px";
+        this.canvas.style.height = newWidth + "px";
+        this.canvas.width = newWidth * dpr;
+        this.canvas.height = newWidth * dpr;
+        this.ctx.scale(dpr, dpr);
+        this.logicalWidth = newWidth;
+        this.logicalHeight = newWidth;
+
         this.draw();
     },
 
     setNames: function (namesList) {
+        if (!Array.isArray(namesList)) {
+            return;
+        }
         this.names = namesList;
         this.arc = Math.PI * 2 / this.names.length;
         this.draw();
@@ -40,76 +65,86 @@ window.wheelHelper = {
 
     draw: function () {
         if (!this.canvas || !this.names.length) return;
-        
-        var baseSize = this.canvas.width;
-        // Use a dynamic radius to fill the space better
-        var outsideRadius = baseSize / 2 - 10; 
-        var insideRadius = baseSize / 5;
+
+        var baseSize = this.logicalWidth;
+        var outsideRadius = baseSize / 2 - 15;
+        var insideRadius = 0;
         var centerX = baseSize / 2;
         var centerY = baseSize / 2;
 
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.clearRect(0, 0, this.logicalWidth, this.logicalHeight);
 
+        this.ctx.strokeStyle = "white";
         this.ctx.lineWidth = 2;
-        // Dynamic font size based on number of names
-        var fontSize = baseSize / 15;
-        if (this.names.length > 10) fontSize = baseSize / 25;
-        this.ctx.font = 'bold ' + fontSize + 'px Helvetica, Arial';
-        this.ctx.textBaseline = 'middle';
 
         for (var i = 0; i < this.names.length; i++) {
             var angle = this.startAngle + i * this.arc;
+            
             this.ctx.fillStyle = this.colors[i % this.colors.length];
-
-            // Draw Slice
             this.ctx.beginPath();
             this.ctx.arc(centerX, centerY, outsideRadius, angle, angle + this.arc, false);
             this.ctx.arc(centerX, centerY, insideRadius, angle + this.arc, angle, true);
-            this.ctx.stroke();
+            this.ctx.lineTo(centerX + Math.cos(angle) * outsideRadius, centerY + Math.sin(angle) * outsideRadius);
             this.ctx.fill();
+            this.ctx.stroke();
 
-            // Draw Text
             this.ctx.save();
-            this.ctx.fillStyle = "white";
             
             this.ctx.translate(centerX, centerY);
+            
+            var textAngle = angle + this.arc / 2;
+            this.ctx.rotate(textAngle);
+            
+            this.ctx.translate(outsideRadius - 10, 0); 
 
-            this.ctx.rotate(angle + this.arc / 2);
-
-            this.ctx.translate(outsideRadius * 0.85, 0); 
-
-            this.ctx.rotate(Math.PI); 
+            this.ctx.fillStyle = "white";
+            this.ctx.shadowColor = "rgba(0,0,0,0.5)";
+            this.ctx.shadowBlur = 4;
+            this.ctx.textBaseline = "middle";
+            this.ctx.textAlign = "right";
 
             var text = this.names[i];
-            if (text.length > 15) text = text.substring(0, 14) + "...";
             
-            // Draw text aligned to the right
-            this.ctx.textAlign = "left"; 
+            var maxFont = baseSize / 15;
+            var minFont = 10;
+            var radiusSpace = outsideRadius - insideRadius - 30;
+            
+            this.ctx.font = 'bold ' + maxFont + 'px Helvetica, Arial';
+            var width = this.ctx.measureText(text).width;
+            
+            var currentFont = maxFont;
+            while (width > radiusSpace && currentFont > minFont) {
+                currentFont -= 1;
+                this.ctx.font = 'bold ' + currentFont + 'px Helvetica, Arial';
+                width = this.ctx.measureText(text).width;
+            }
+
             this.ctx.fillText(text, 0, 0);
-            
             this.ctx.restore();
         }
 
-        // Draw the pointer
         this.drawPointer(centerX, outsideRadius);
     },
 
     drawPointer: function(centerX, radius) {
+        this.ctx.save();
         this.ctx.fillStyle = "#333";
+        this.ctx.shadowColor = "rgba(0,0,0,0.3)";
+        this.ctx.shadowBlur = 5;
         this.ctx.beginPath();
-
-        this.ctx.moveTo(centerX - 15, 10);
-        this.ctx.lineTo(centerX + 15, 10);
-        this.ctx.lineTo(centerX, 35);
+        this.ctx.moveTo(centerX - 20, 5); 
+        this.ctx.lineTo(centerX + 20, 5);
+        this.ctx.lineTo(centerX, 45);
         this.ctx.fill();
+        this.ctx.restore();
     },
 
-    spin: function (winnerIndex) {
+    spin: function () {
+        if(this.isSpinning) return;
+        this.isSpinning = true;
         this.spinArcStart = Math.random() * 10 + 10;
         this.spinTime = 0;
-        this.spinTimeTotal = Math.random() * 3 + 4 * 1000; // Spin between 4 and 7 seconds
-        
-        // Calculate target logic
+        this.spinTimeTotal = Math.random() * 3000 + 4 * 1000; 
         this.rotateWheel();
     },
 
@@ -119,6 +154,7 @@ window.wheelHelper = {
             this.stopRotateWheel();
             return;
         }
+        
         var spinAngle = this.spinArcStart - this.easeOut(this.spinTime, 0, this.spinArcStart, this.spinTimeTotal);
         this.startAngle += (spinAngle * Math.PI / 180);
         this.draw();
@@ -127,20 +163,31 @@ window.wheelHelper = {
 
     stopRotateWheel: function () {
         clearTimeout(this.spinTimeout);
+        
         var degrees = this.startAngle * 180 / Math.PI + 90;
         var arcd = this.arc * 180 / Math.PI;
         var index = Math.floor((360 - degrees % 360) / arcd);
-        this.ctx.save();
         
-        // Notify Blazor who the winner is based on the visual stop
+        this.isSpinning = false;
         var winnerName = this.names[index];
+        
+        this.fireConfetti();
+        
         this.dotNetRef.invokeMethodAsync('OnSpinFinished', winnerName);
-        this.ctx.restore();
     },
 
     easeOut: function (t, b, c, d) {
         var ts = (t /= d) * t;
         var tc = ts * t;
         return b + c * (tc + -3 * ts + 3 * t);
+    },
+
+    fireConfetti: function() {
+        var baseSize = this.logicalWidth;
+        this.ctx.save();
+        this.ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+        this.ctx.fillRect(0,0, baseSize, baseSize);
+        this.ctx.restore();
+        setTimeout(() => this.draw(), 100);
     }
 };

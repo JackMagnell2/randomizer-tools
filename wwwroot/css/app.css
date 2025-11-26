@@ -206,209 +206,113 @@ body {
    Wheel of Names Page Styles
    ======================================== */
 
-.wheel-container {
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 2rem;
-}
-
-.wheel-container h2 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #1a1a1a;
-    margin-bottom: 0.5rem;
-}
-
-.wheel-container .subtitle {
-    font-size: 1.1rem;
-    color: #6c757d;
-    margin-bottom: 2rem;
-}
-
-/* Input Section */
-.input-section {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-.name-input {
-    flex: 1;
-    font-size: 1.1rem;
-    padding: 0.75rem;
-}
-
-.add-btn {
-    padding: 0.75rem 2rem;
-    font-size: 1.1rem;
-    white-space: nowrap;
-}
-
-/* Entries Section */
-.entries-section {
-    background: white;
-    border: 2px solid #e9ecef;
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.entries-section h5 {
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 1rem;
-}
-
-.entries-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.entry-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-    transition: background 0.2s;
-}
-
-.entry-item:hover {
-    background: #e9ecef;
-}
-
-.entry-item span {
-    font-size: 1.05rem;
-    color: #1a1a1a;
-}
-
-/* Spin Section */
-.spin-section {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.spin-btn {
-    padding: 1rem 3rem;
-    font-size: 1.3rem;
-    font-weight: 600;
-    border-radius: 50px;
-    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-    transition: all 0.3s;
-}
-
-.spin-btn:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
-}
-
-/* Winner Section */
-.winner-section {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 2rem;
-    border-radius: 12px;
-    text-align: center;
-    animation: slideIn 0.5s ease;
-}
-
-.winner-section h4 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    font-weight: 600;
-}
-
-.winner-name {
-    font-size: 2.5rem;
-    font-weight: 700;
-    animation: bounce 0.6s ease;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes bounce {
-    0%, 100% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.1);
-    }
-}
-
-@media (max-width: 768px) {
-    .wheel-container {
-        padding: 1rem;
-    }
-    
-    .input-section {
-        flex-direction: column;
-    }
-    
-    .add-btn {
-        width: 100%;
-    }
-}
-
-/* Wheel Styles */
+/* Wheel Container */
 .wheel-wrapper {
     position: relative;
     width: 100%;
-    max-width: 500px;
+    max-width: 600px;
+    aspect-ratio: 1 / 1;
     margin: 0 auto;
+    background: radial-gradient(circle at center, #ffffff 0%, #f0f0f0 100%);
+    border-radius: 50%;
+    box-shadow: 
+        0 0 0 10px rgba(255,255,255,0.5),
+        0 0 20px rgba(0,0,0,0.2);
+    padding: 10px;
 }
 
 canvas#wheelCanvas {
     width: 100%;
-    filter: drop-shadow(0px 10px 15px rgba(0,0,0,0.2));
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    height: 100%;
+    border-radius: 50%;
 }
 
-canvas#wheelCanvas:hover {
-    transform: scale(1.02);
-}
-
+/* Spin Button - Game Style */
 .spin-btn {
-    border-radius: 50px;
+    margin-top: -30px;
+    position: relative;
+    z-index: 10;
     font-size: 1.5rem;
-    letter-spacing: 2px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    padding: 15px 50px;
+    border-radius: 50px;
+    background: linear-gradient(to bottom, #2ecc71, #27ae60);
+    border: none;
+    box-shadow: 0 5px 0 #1e8449, 0 10px 10px rgba(0,0,0,0.2);
+    transition: all 0.1s;
     text-transform: uppercase;
-    transition: all 0.2s;
-}
-
-.spin-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
 }
 
 .spin-btn:active {
-    transform: translateY(1px);
+    transform: translateY(5px);
+    box-shadow: 0 0 0 #1e8449, 0 0 0 rgba(0,0,0,0);
 }
 
-/* Winner Animation */
-.winner-display {
-    background: #fff;
-    border-radius: 15px;
-    padding: 2rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    border: 2px solid #f0f0f0;
+.spin-btn:disabled {
+    background: #bdc3c7;
+    box-shadow: none;
+    cursor: not-allowed;
 }
 
-.animate-pop {
+/* Winner Modal / Overlay */
+.winner-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s;
+}
+
+.winner-card {
+    background: white;
+    padding: 3rem;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    min-width: 300px;
+}
+
+.winner-card h2 {
+    color: #7f8c8d;
+    text-transform: uppercase;
+    font-size: 1rem;
+    letter-spacing: 2px;
+}
+
+.winner-card .winner-name {
+    font-size: 3.5rem;
+    font-weight: 800;
+    background: linear-gradient(45deg, #FF6384, #36A2EB);
+    -webkit-background-clip: text; /* For Chrome, Safari, Edge */
+    background-clip: text;         /* Standard property for compatibility */
+    -webkit-text-fill-color: transparent;
+    margin: 1rem 0;
+}
+
+/* Keyframes */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 @keyframes popIn {
     0% { opacity: 0; transform: scale(0.5); }
     100% { opacity: 1; transform: scale(1); }
+}
+
+/* Utility helpers for list items */
+.hover-shadow {
+    transition: box-shadow 0.2s;
+}
+.hover-shadow:hover {
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.fw-500 {
+    font-weight: 500;
 }
