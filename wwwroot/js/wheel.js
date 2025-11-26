@@ -101,35 +101,40 @@ window.wheelHelper = {
                 this.ctx.fill();
                 this.ctx.stroke();
             }
+            this.drawCenterHub(centerX);
             this.drawPointer(centerX, outsideRadius);
             return;
         }
 
         for (var i = 0; i < this.names.length; i++) {
             var angle = this.startAngle + i * this.arc;
-            
             this.ctx.fillStyle = this.colors[i % this.colors.length];
+            
             this.ctx.beginPath();
-            this.ctx.arc(centerX, centerY, outsideRadius, angle, angle + this.arc, false);
-            this.ctx.arc(centerX, centerY, insideRadius, angle + this.arc, angle, true);
-            this.ctx.lineTo(centerX + Math.cos(angle) * outsideRadius, centerY + Math.sin(angle) * outsideRadius);
+            if (this.names.length === 1) {
+                this.ctx.arc(centerX, centerY, outsideRadius, 0, 2 * Math.PI);
+            } else {
+                this.ctx.arc(centerX, centerY, outsideRadius, angle, angle + this.arc, false);
+                this.ctx.arc(centerX, centerY, insideRadius, angle + this.arc, angle, true);
+                this.ctx.lineTo(centerX + Math.cos(angle) * outsideRadius, centerY + Math.sin(angle) * outsideRadius);
+            }
             this.ctx.fill();
             this.ctx.stroke();
+        }
 
+        this.drawCenterHub(centerX);
+
+        for (var i = 0; i < this.names.length; i++) {
+            var angle = this.startAngle + i * this.arc;
+            
             this.ctx.save();
             this.ctx.translate(centerX, centerY);
             
             var textAngle = angle + this.arc / 2;
             
-            if (this.names.length === 1) {
-                this.ctx.rotate(0);
-                this.ctx.translate(0, 0); 
-                this.ctx.textAlign = "center";
-            } else {
-                this.ctx.rotate(textAngle);
-                this.ctx.translate(outsideRadius - 30, 0); 
-                this.ctx.textAlign = "right";
-            }
+            this.ctx.rotate(textAngle);
+            this.ctx.translate(outsideRadius - 30, 0); 
+            this.ctx.textAlign = "right";
 
             this.ctx.fillStyle = "white";
             this.ctx.shadowColor = "rgba(0,0,0,0.5)";
@@ -170,7 +175,24 @@ window.wheelHelper = {
         this.drawPointer(centerX, outsideRadius);
     },
 
-    // Draws the animated pointer with physics offset
+    // Draws the center decorative hub
+    drawCenterHub: function(centerX) {
+        this.ctx.save();
+        this.ctx.beginPath();
+        this.ctx.arc(centerX, centerX, 25, 0, 2 * Math.PI);
+        this.ctx.fillStyle = "white";
+        this.ctx.shadowColor = "rgba(0,0,0,0.2)";
+        this.ctx.shadowBlur = 5;
+        this.ctx.fill();
+        
+        this.ctx.beginPath();
+        this.ctx.arc(centerX, centerX, 10, 0, 2 * Math.PI);
+        this.ctx.fillStyle = "#ffce00"; 
+        this.ctx.fill();
+        this.ctx.restore();
+    },
+
+    // Draws the top pointer arrow
     drawPointer: function(centerX, radius) {
         this.ctx.save();
         
@@ -191,7 +213,7 @@ window.wheelHelper = {
         this.ctx.restore();
     },
 
-    // Resets physics and starts the rotation loop
+    // Starts the spin animation
     spin: function () {
         if(this.isSpinning || this.names.length === 0) return;
         this.isSpinning = true;
@@ -202,7 +224,7 @@ window.wheelHelper = {
         this.rotateWheel();
     },
 
-    // Animation loop handling rotation, audio triggers, and pointer physics
+    // Loops the animation frame
     rotateWheel: function () {
         this.spinTime += 30;
         if (this.spinTime >= this.spinTimeTotal) {
@@ -227,7 +249,7 @@ window.wheelHelper = {
         this.spinTimeout = setTimeout(() => this.rotateWheel(), 30);
     },
 
-    // Plays the tick sound effect
+    // Plays audio tick
     playTick: function() {
         if (this.tickAudio) {
             this.tickAudio.currentTime = 0;
@@ -235,7 +257,7 @@ window.wheelHelper = {
         }
     },
 
-    // Finalizes the spin, plays win sound, and triggers confetti
+    // Ends rotation and selects winner
     stopRotateWheel: function () {
         clearTimeout(this.spinTimeout);
         
@@ -255,14 +277,14 @@ window.wheelHelper = {
         this.dotNetRef.invokeMethodAsync('OnSpinFinished', winnerName);
     },
 
-    // Quadratic easing for smooth deceleration
+    // Easing math for deceleration
     easeOut: function (t, b, c, d) {
         var ts = (t /= d) * t;
         var tc = ts * t;
         return b + c * (tc + -3 * ts + 3 * t);
     },
 
-    // Triggers canvas confetti explosion
+    // Triggers confetti effect
     fireConfetti: function() {
         if (typeof confetti === 'function') {
             confetti({

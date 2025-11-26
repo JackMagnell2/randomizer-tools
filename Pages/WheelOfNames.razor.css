@@ -98,6 +98,33 @@ canvas#wheelCanvas {
     box-shadow: 0 0 10px #8e44ad;
 }
 
+/* Utility Toolbar styling */
+.toolbar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Utility button styling */
+.btn-tool {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #dfe6e9;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 8px;
+    padding: 0.4rem;
+    transition: all 0.2s;
+}
+
+/* Utility button hover state */
+.btn-tool:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
 /* Scrollbar track width */
 .entries-list::-webkit-scrollbar {
     width: 6px;
