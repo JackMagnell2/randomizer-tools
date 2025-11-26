@@ -16,6 +16,7 @@ window.wheelHelper = {
     dotNetRef: null,
     isSpinning: false,
 
+    // Initializes the canvas, context, and resize listeners
     init: function (canvasId, dotNetReference) {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext("2d");
@@ -37,6 +38,7 @@ window.wheelHelper = {
         this.resize(); 
     },
 
+    // Handles responsive resizing of the canvas element
     resize: function() {
         if(!this.canvas) return;
         var container = this.canvas.parentElement;
@@ -54,6 +56,7 @@ window.wheelHelper = {
         this.draw();
     },
 
+    // Updates the list of names and redraws the wheel
     setNames: function (namesList) {
         if (!Array.isArray(namesList)) return;
         this.names = namesList;
@@ -61,11 +64,11 @@ window.wheelHelper = {
         this.draw();
     },
 
+    // Main rendering loop for the wheel, slices, and text
     draw: function () {
         if (!this.canvas || !this.names.length) return;
 
         var baseSize = this.logicalWidth;
-        // INCREASED PADDING: Was -15, now -25 to give room for arrow/button
         var outsideRadius = baseSize / 2 - 25; 
         var insideRadius = 0;
         var centerX = baseSize / 2;
@@ -88,7 +91,6 @@ window.wheelHelper = {
             this.ctx.stroke();
 
             this.ctx.save();
-            
             this.ctx.translate(centerX, centerY);
             
             var textAngle = angle + this.arc / 2;
@@ -99,7 +101,6 @@ window.wheelHelper = {
                 this.ctx.textAlign = "center";
             } else {
                 this.ctx.rotate(textAngle);
-                // INCREASED TEXT PADDING: Was -10, now -30 to push text away from edge
                 this.ctx.translate(outsideRadius - 30, 0); 
                 this.ctx.textAlign = "right";
             }
@@ -110,16 +111,28 @@ window.wheelHelper = {
             this.ctx.textBaseline = "middle";
             
             var text = this.names[i];
-            
+            if (text.length > 15) {
+                text = text.substring(0, 15) + "...";
+            }
+
             var maxFont = baseSize / 15;
+            
+            if (this.names.length > 8) {
+                maxFont = baseSize / 22; 
+            }
+            if (this.names.length > 12) {
+                maxFont = baseSize / 28;
+            }
+
             var minFont = 10;
-            // Limit text space
-            var radiusSpace = outsideRadius - insideRadius - 40;
+
+            var safeCenterZone = outsideRadius * 0.25; 
+            var radiusSpace = outsideRadius - 30 - safeCenterZone;
             
             if (this.names.length === 1) {
-                // Cap single name size so it isn't huge
                 radiusSpace = outsideRadius * 1.5;
                 if (maxFont > 40) maxFont = 40; 
+                maxFont = baseSize / 10; 
             }
 
             this.ctx.font = 'bold ' + maxFont + 'px Helvetica, Arial';
@@ -139,34 +152,33 @@ window.wheelHelper = {
         this.drawPointer(centerX, outsideRadius);
     },
 
+    // Draws the static indicator arrow at the top
     drawPointer: function(centerX, radius) {
         this.ctx.save();
         this.ctx.fillStyle = "#333";
         this.ctx.shadowColor = "rgba(0,0,0,0.3)";
         this.ctx.shadowBlur = 5;
         this.ctx.beginPath();
-        // Make the arrow slightly larger and overlap the wheel edge slightly
         this.ctx.moveTo(centerX - 25, 5); 
         this.ctx.lineTo(centerX + 25, 5);
-        this.ctx.lineTo(centerX, 55); // Longer tip to reach the shrunk wheel
+        this.ctx.lineTo(centerX, 55); 
         this.ctx.fill();
         this.ctx.restore();
     },
 
+    // Sets initial physics parameters and starts the animation loop
     spin: function () {
         if(this.isSpinning) return;
         this.isSpinning = true;
         
-        // PHYSICS UPDATE
-        // Start Speed: Was 10-20. Now 30-50 (Much faster start)
         this.spinArcStart = Math.random() * 20 + 30; 
         this.spinTime = 0;
-        // Duration: Was 4-7s. Now 6-9s (Longer suspense)
         this.spinTimeTotal = Math.random() * 3000 + 6000; 
         
         this.rotateWheel();
     },
 
+    // Animation frame loop handling rotation and deceleration
     rotateWheel: function () {
         this.spinTime += 30;
         if (this.spinTime >= this.spinTimeTotal) {
@@ -180,6 +192,7 @@ window.wheelHelper = {
         this.spinTimeout = setTimeout(() => this.rotateWheel(), 30);
     },
 
+    // Finalizes the spin, determines the winner, and triggers callbacks
     stopRotateWheel: function () {
         clearTimeout(this.spinTimeout);
         
@@ -193,12 +206,14 @@ window.wheelHelper = {
         this.dotNetRef.invokeMethodAsync('OnSpinFinished', winnerName);
     },
 
+    // Quadratic easing function for smooth deceleration
     easeOut: function (t, b, c, d) {
         var ts = (t /= d) * t;
         var tc = ts * t;
         return b + c * (tc + -3 * ts + 3 * t);
     },
 
+    // Triggers a visual flash effect on the canvas
     fireConfetti: function() {
         var baseSize = this.logicalWidth;
         this.ctx.save();
