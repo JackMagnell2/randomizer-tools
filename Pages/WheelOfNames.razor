@@ -2,6 +2,7 @@
 @using RandomizerTools.ViewModels
 @using RandomizerTools.Models
 @using RandomizerTools.Services
+@using System.Text.Json
 @inject RandomizerService RandomizerService
 @inject IJSRuntime JSRuntime
 @implements IDisposable
@@ -19,7 +20,7 @@
                 <div class="card-body d-flex flex-column">
                     <div class="input-group mb-3">
                         <input type="text" class="form-control form-control-lg" 
-                               placeholder="Add an entry..." 
+                               placeholder="Add a name..." 
                                @bind="currentInput" 
                                @bind:event="oninput"
                                @onkeypress="HandleKeyPress" />
@@ -101,7 +102,9 @@
     private bool isSpinning = false;
     private bool showWinner = false;
     private string winnerText = "";
+    private bool _isWheelInit = false;
     private DotNetObjectReference<WheelOfNames>? objRef;
+    private const string LocalStorageKey = "wheel_entries";
 
     protected override void OnInitialized()
     {
@@ -109,15 +112,26 @@
         objRef = DotNetObjectReference.Create(this);
     }
 
+    // Handles JS initialization. Checks constantly if the wheel needs to wake up.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender || _viewModel.Entries.Count > 0)
+        if (firstRender)
         {
-            try {
-                var names = _viewModel.Entries.Select(e => e.Name).ToArray();
+            await LoadEntries();
+        }
+
+        if (_viewModel.Entries.Count > 0 && !_isWheelInit)
+        {
+            try 
+            {
                 await JSRuntime.InvokeVoidAsync("wheelHelper.init", "wheelCanvas", objRef);
-                await JSRuntime.InvokeVoidAsync("wheelHelper.setNames", new object[] { names });
-            } catch { }
+                await UpdateWheel();
+                _isWheelInit = true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Wheel Init Failed: " + ex.Message);
+            }
         }
     }
 
@@ -127,14 +141,23 @@
         {
             _viewModel.AddEntry(currentInput);
             currentInput = string.Empty;
-            await UpdateWheel();
+            await SaveEntries();
+
+            if (_isWheelInit) await UpdateWheel();
         }
     }
 
     private async Task RemoveEntry(WheelEntry entry)
     {
         _viewModel.RemoveEntry(entry);
-        await UpdateWheel();
+        
+        if (_viewModel.Entries.Count == 0)
+        {
+            _isWheelInit = false;
+        }
+
+        await SaveEntries();
+        if (_isWheelInit) await UpdateWheel();
     }
 
     private async Task RemoveWinner()
@@ -144,7 +167,11 @@
         {
             _viewModel.RemoveEntry(winnerEntry);
             showWinner = false;
-            await UpdateWheel();
+
+            if (_viewModel.Entries.Count == 0) _isWheelInit = false;
+
+            await SaveEntries();
+            if (_isWheelInit) await UpdateWheel();
         }
     }
 
@@ -155,8 +182,11 @@
 
     private async Task UpdateWheel()
     {
-        var names = _viewModel.Entries.Select(e => e.Name).ToArray();
-        await JSRuntime.InvokeVoidAsync("wheelHelper.setNames", new object[] { names });
+        if (_viewModel.Entries.Count > 0)
+        {
+            var names = _viewModel.Entries.Select(e => e.Name).ToArray();
+            await JSRuntime.InvokeVoidAsync("wheelHelper.setNames", new object[] { names });
+        }
     }
 
     private async Task SpinWheel()
@@ -178,6 +208,30 @@
     private async Task HandleKeyPress(KeyboardEventArgs e)
     {
         if (e.Key == "Enter") await AddName();
+    }
+
+    private async Task SaveEntries()
+    {
+        var json = JsonSerializer.Serialize(_viewModel.Entries);
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", LocalStorageKey, json);
+    }
+
+    private async Task LoadEntries()
+    {
+        var json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", LocalStorageKey);
+        if (!string.IsNullOrEmpty(json))
+        {
+            try 
+            {
+                var loadedEntries = JsonSerializer.Deserialize<List<WheelEntry>>(json);
+                if (loadedEntries != null && loadedEntries.Count > 0)
+                {
+                    _viewModel.Entries = loadedEntries;
+                    StateHasChanged(); 
+                }
+            }
+            catch { }
+        }
     }
 
     public void Dispose()
