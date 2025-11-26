@@ -87,7 +87,7 @@ canvas#wheelCanvas {
     color: white;
 }
 
-/* Spin button hover effect - Toned down */
+/* Spin button hover effect */
 .spin-btn:hover:not(:disabled) {
     transform: translateY(-3px) scale(1.02);
     filter: brightness(1.1);
