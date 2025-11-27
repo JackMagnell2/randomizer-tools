@@ -21,7 +21,7 @@
                     
                     <div class="input-group modern-input-group mb-3">
                         <input type="text" class="form-control modern-input" 
-                               placeholder="Type a name..." 
+                               placeholder="Add an entry..." 
                                @bind="currentInput" 
                                @bind:event="oninput"
                                @onkeypress="HandleKeyPress" />
@@ -139,7 +139,7 @@
     // Checks if the wheel is allowed to spin
     private bool CanSpin => isSpinning || _viewModel.Entries.Count == 0;
 
-    // Calculates the total weight of all entries for percentage math
+    // Calculates the total weight of all entries
     private long TotalWeight => _viewModel.Entries.Sum(e => e.Weight);
 
     // Initializes view model and object reference
@@ -174,15 +174,13 @@
         }
     }
 
-    // Adds a new entry with default weight of 10
+    // Adds a new entry to the list
     private async Task AddName()
     {
         if (!string.IsNullOrWhiteSpace(currentInput))
         {
             _viewModel.AddEntry(currentInput);
-            // Ensure newly added entries have a nice default size
             _viewModel.Entries.Last().Weight = 10; 
-            
             currentInput = string.Empty;
             await SaveEntries();
             await UpdateWheel();
@@ -253,7 +251,9 @@
         if (_viewModel.Entries.Count == 0) return;
         isSpinning = true;
         showWinner = false;
-        await JSRuntime.InvokeVoidAsync("wheelHelper.spin");
+        try {
+            await JSRuntime.InvokeVoidAsync("wheelHelper.spin");
+        } catch { isSpinning = false; }
     }
 
     // Callback invoked when spinning completes
@@ -291,7 +291,6 @@
                 if (loadedEntries != null)
                 {
                     _viewModel.Entries = loadedEntries;
-
                     foreach(var entry in _viewModel.Entries)
                     {
                         if(entry.Weight < 1) entry.Weight = 10;
