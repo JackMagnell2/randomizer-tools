@@ -98,7 +98,9 @@ window.wheelHelper = {
             this.ctx.fill();
             this.ctx.stroke();
 
-            this.drawSliceText(this.entries[i].name, currentAngle, sliceArc, centerX, centerY, outsideRadius, baseSize, this.entries.length);
+            if (this.entries.length <= 60) {
+                this.drawSliceText(this.entries[i].name, currentAngle, sliceArc, centerX, centerY, outsideRadius, baseSize, this.entries.length);
+            }
 
             currentAngle = endAngle;
         }
@@ -266,7 +268,7 @@ window.wheelHelper = {
         var safeTotal = this.totalWeight || 1;
 
         for(var i=0; i<this.entries.length; i++) {
-            var arc = (this.entries[i].weight / safeTotal) * (Math.PI * 2);
+            var arc = ((this.entries[i].weight || 0) / safeTotal) * (Math.PI * 2);
             currentAngleSum += arc;
             if(pointerAngle < currentAngleSum) {
                 currentIndex = i;
@@ -287,7 +289,7 @@ window.wheelHelper = {
         this.spinTimeout = setTimeout(() => this.rotateWheel(), 30);
     },
 
-    // Stops spin and selects winner
+    // Ends rotation and selects winner
     stopRotateWheel: function () {
         clearTimeout(this.spinTimeout);
         
@@ -301,7 +303,7 @@ window.wheelHelper = {
         var safeTotal = this.totalWeight || 1;
 
         for (var i = 0; i < this.entries.length; i++) {
-            var arc = (this.entries[i].weight / safeTotal) * (Math.PI * 2);
+            var arc = ((this.entries[i].weight || 0) / safeTotal) * (Math.PI * 2);
             currentAngleSum += arc;
             if (pointerAngle < currentAngleSum) {
                 winnerIndex = i;
@@ -333,5 +335,17 @@ window.wheelHelper = {
         var ts = (t /= d) * t;
         var tc = ts * t;
         return b + c * (tc + -3 * ts + 3 * t);
+    },
+
+    // Triggers confetti effect
+    fireConfetti: function() {
+        if (typeof confetti === 'function') {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: this.colors
+            });
+        }
     }
 };
