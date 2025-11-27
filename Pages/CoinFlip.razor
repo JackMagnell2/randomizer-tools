@@ -1,0 +1,207 @@
+@page "/coin"
+@using RandomizerTools.ViewModels
+@using RandomizerTools.Services
+@using System.Text.Json
+@inject RandomizerService RandomizerService
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<PageTitle>Coin Flip - RandomizerTools</PageTitle>
+
+<div class="container py-5 text-center">
+    
+    <div class="mb-5">
+        <h1 class="display-4 fw-bold text-white mb-2" style="font-family: 'Fredoka', sans-serif;">Coin Flip</h1>
+        <p class="text-white-50">Flip a coin to settle a bet or make a decision!</p>
+    </div>
+
+    <div class="row justify-content-center align-items-center g-5">
+        
+        <div class="col-md-3 d-none d-md-block">
+            <div class="stat-card">
+                <h3>Heads</h3>
+                <div class="stat-value text-warning">@_viewModel.HeadsCount</div>
+            </div>
+            <div class="stat-card mt-3">
+                <h3>Tails</h3>
+                <div class="stat-value text-secondary">@_viewModel.TailsCount</div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="scene">
+                <div id="coinElement" class="coin @(GetCoinStateClass())">
+                    <div class="coin-face coin-front">
+                        <div class="coin-content">
+                            <span class="fs-1">👑</span>
+                            <div>HEADS</div>
+                        </div>
+                    </div>
+                    <div class="coin-face coin-back">
+                        <div class="coin-content">
+                            <span class="fs-1">🦅</span>
+                            <div>TAILS</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn spin-btn mt-5" @onclick="Flip" disabled="@isFlipping">
+                @if(isFlipping) { <span>Flipping...</span> } else { <span>FLIP!</span> }
+            </button>
+        </div>
+
+        <div class="col-md-3 d-none d-md-block">
+            <div class="history-card">
+                <h4>History</h4>
+                <div class="history-list">
+                    @foreach(var result in _viewModel.History)
+                    {
+                        <div class="history-item @(result == "Heads" ? "is-heads" : "is-tails")">
+                            @result
+                        </div>
+                    }
+                    @if(_viewModel.History.Count == 0)
+                    {
+                        <div class="text-white-50 small mt-3">No flips yet</div>
+                    }
+                </div>
+                
+                @if(_viewModel.History.Count > 0)
+                {
+                    <button class="btn btn-sm btn-outline-light mt-3 w-100" @onclick="Reset" disabled="@isFlipping">Reset</button>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-5 d-md-none">
+        <div class="col-6">
+            <div class="stat-card small">
+                <h5>Heads</h5>
+                <span class="text-warning">@_viewModel.HeadsCount</span>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="stat-card small">
+                <h5>Tails</h5>
+                <span class="text-secondary">@_viewModel.TailsCount</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@code {
+    private CoinFlipViewModel _viewModel = null!;
+    private bool isFlipping = false;
+    private DotNetObjectReference<CoinFlip>? objRef;
+    private bool isJsInitialized = false;
+    private const string LocalStorageKey = "coin_stats";
+
+    protected override void OnInitialized()
+    {
+        _viewModel = new CoinFlipViewModel(RandomizerService);
+        objRef = DotNetObjectReference.Create(this);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadState();
+            await JSRuntime.InvokeVoidAsync("coinHelper.init", objRef, "coinElement");
+            isJsInitialized = true;
+            StateHasChanged();
+        }
+    }
+
+    // Returns the current visual state
+    private string GetCoinStateClass()
+    {
+        return _viewModel.IsHeads ? "heads" : "tails";
+    }
+
+    // Initiates the flip sequence
+    private async Task Flip()
+    {
+        if (isFlipping || !isJsInitialized) return;
+
+        isFlipping = true;
+        
+        bool resultIsHeads = _viewModel.CalculateFlip();
+
+        await JSRuntime.InvokeVoidAsync("coinHelper.animateFlip", resultIsHeads);
+    }
+
+    // Handles the animation completion event
+    [JSInvokable]
+    public async Task OnFlipFinished()
+    {
+        _viewModel.CommitResult();
+        isFlipping = false;
+        await SaveState();
+        StateHasChanged();
+    }
+
+    // Resets the view model and storage
+    private async Task Reset()
+    {
+        _viewModel.ResetStats();
+        await SaveState();
+    }
+
+    // Persists stats to local storage
+    private async Task SaveState()
+    {
+        var data = new 
+        {
+            Heads = _viewModel.HeadsCount,
+            Tails = _viewModel.TailsCount,
+            History = _viewModel.History,
+            LastIsHeads = _viewModel.IsHeads
+        };
+        var json = JsonSerializer.Serialize(data);
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", LocalStorageKey, json);
+    }
+
+    // Loads stats from local storage
+    private async Task LoadState()
+    {
+        var json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", LocalStorageKey);
+        if (!string.IsNullOrEmpty(json))
+        {
+            try 
+            {
+                var data = JsonSerializer.Deserialize<SavedCoinState>(json);
+                if (data != null)
+                {
+                    // Manually restore ViewModel state
+                    // Note: Ideally ViewModel would handle this, but keeping it simple here
+                    // requires accessing internal setters or modifying ViewModel.
+                    // For now, we will just use the ViewModel's public state if setters allow, 
+                    // or we need to add a Restore method to ViewModel.
+                    
+                    // Recommended: Add Restore method to ViewModel (see step below)
+                    _viewModel.RestoreState(data.Heads, data.Tails, data.History, data.LastIsHeads);
+                }
+            }
+            catch { }
+        }
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        objRef?.Dispose();
+        return ValueTask.CompletedTask;
+    }
+
+    // Helper class for JSON serialization
+    private class SavedCoinState
+    {
+        public int Heads { get; set; }
+        public int Tails { get; set; }
+        public List<string> History { get; set; } = new();
+        public bool LastIsHeads { get; set; }
+    }
+}
