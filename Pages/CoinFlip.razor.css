@@ -1,0 +1,199 @@
+/* 3D Scene Container */
+.scene {
+    width: 300px;
+    height: 300px;
+    perspective: 1000px;
+    margin: 0 auto;
+}
+
+/* The Coin Object */
+.coin {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+}
+
+/* Coin Faces (Front/Back) */
+.coin-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden; /* Hides the back when facing away */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 
+        inset 0 0 40px rgba(0,0,0,0.2), /* Inner depth */
+        0 10px 30px rgba(0,0,0,0.5);    /* Drop shadow */
+    border: 10px solid;
+}
+
+/* Heads Design (Gold) */
+.coin-front {
+    background: radial-gradient(circle at 30% 30%, #f1c40f, #e67e22);
+    border-color: #f39c12;
+    transform: rotateY(0deg);
+}
+
+/* Tails Design (Silver) */
+.coin-back {
+    background: radial-gradient(circle at 30% 30%, #ecf0f1, #bdc3c7);
+    border-color: #95a5a6;
+    transform: rotateY(180deg);
+}
+
+/* Inner Text/Icon styling */
+.coin-content {
+    text-align: center;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.9);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    transform: translateZ(1px); /* Slight 3D pop */
+}
+
+/* --- ANIMATION STATES --- */
+
+/* State: Heads result */
+.coin.heads {
+    transform: rotateY(0deg);
+}
+
+/* State: Tails result */
+.coin.tails {
+    transform: rotateY(180deg);
+}
+
+/* Animation: Flipping to Heads (Multiple rotations + landing at 0) */
+.coin.flipping.heads {
+    animation: flipHeads 3s ease-out forwards;
+}
+
+/* Animation: Flipping to Tails (Multiple rotations + landing at 180) */
+.coin.flipping.tails {
+    animation: flipTails 3s ease-out forwards;
+}
+
+@keyframes flipHeads {
+    0% { transform: rotateY(0) scale(1); }
+    50% { transform: rotateY(900deg) scale(1.5); } /* Zoom in at peak */
+    100% { transform: rotateY(1800deg) scale(1); } /* 5 full spins */
+}
+
+@keyframes flipTails {
+    0% { transform: rotateY(0) scale(1); }
+    50% { transform: rotateY(1080deg) scale(1.5); }
+    100% { transform: rotateY(1980deg) scale(1); } /* 5.5 full spins */
+}
+
+/* --- UI ELEMENTS --- */
+
+/* Stat Cards */
+.stat-card {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+}
+
+.stat-card h3 {
+    font-size: 1.2rem;
+    color: #fff;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    font-family: 'Fredoka', sans-serif;
+}
+
+/* History Card */
+.history-card {
+    background: rgba(0,0,0,0.3);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: left;
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+}
+
+.history-card h4 {
+    color: #a29bfe;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 0.5rem;
+}
+
+.history-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.history-item {
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.history-item.is-heads {
+    background: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
+    border: 1px solid rgba(241, 196, 15, 0.3);
+}
+
+.history-item.is-tails {
+    background: rgba(236, 240, 241, 0.2);
+    color: #ecf0f1;
+    border: 1px solid rgba(236, 240, 241, 0.3);
+}
+
+/* Spin Button (Reused style from Wheel) */
+.spin-btn {
+    font-size: 1.5rem;
+    font-family: 'Fredoka', sans-serif;
+    letter-spacing: 2px;
+    padding: 15px 50px;
+    border-radius: 60px;
+    background: linear-gradient(to bottom, #ffce00, #ffa502);
+    border: 4px solid #fff;
+    box-shadow: 0 8px 0 #e67e22, 0 15px 20px rgba(0,0,0,0.3);
+    transition: all 0.1s;
+    text-transform: uppercase;
+    color: #fff;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.2);
+}
+
+.spin-btn:hover:not(:disabled) {
+    transform: translateY(-3px);
+    filter: brightness(1.1);
+    box-shadow: 0 10px 0 #e67e22, 0 20px 30px rgba(255, 165, 2, 0.4);
+}
+
+.spin-btn:active {
+    transform: translateY(5px);
+    box-shadow: 0 0 0 #e67e22;
+}
+
+.spin-btn:disabled {
+    background: #b2bec3;
+    box-shadow: 0 4px 0 #636e72;
+    cursor: not-allowed;
+    transform: translateY(4px);
+    border-color: #dfe6e9;
+}

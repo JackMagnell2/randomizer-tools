@@ -1,0 +1,133 @@
+@page "/coin"
+@using RandomizerTools.ViewModels
+@using RandomizerTools.Services
+@inject RandomizerService RandomizerService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Coin Flip - RandomizerTools</PageTitle>
+
+<div class="container py-5 text-center">
+    
+    <!-- Header -->
+    <div class="mb-5">
+        <h1 class="display-4 fw-bold text-white mb-2" style="font-family: 'Fredoka', sans-serif;">Coin Flip</h1>
+        <p class="text-white-50">Flip a coin to settle a bet or make a decision!</p>
+    </div>
+
+    <!-- Main Game Area -->
+    <div class="row justify-content-center align-items-center g-5">
+        
+        <!-- Left Column: Stats -->
+        <div class="col-md-3 d-none d-md-block">
+            <div class="stat-card">
+                <h3>Heads</h3>
+                <div class="stat-value text-warning">@_viewModel.HeadsCount</div>
+            </div>
+            <div class="stat-card mt-3">
+                <h3>Tails</h3>
+                <div class="stat-value text-secondary">@_viewModel.TailsCount</div>
+            </div>
+        </div>
+
+        <!-- Center Column: The Coin -->
+        <div class="col-md-6">
+            <div class="scene">
+                <!-- The Coin Div: Rotates based on IsHeads and IsFlipping -->
+                <div class="coin @(isFlipping ? "flipping" : "") @(_viewModel.IsHeads ? "heads" : "tails")" @onclick="Flip">
+                    <div class="coin-face coin-front">
+                        <div class="coin-content">
+                            <span class="fs-1">👑</span>
+                            <div>HEADS</div>
+                        </div>
+                    </div>
+                    <div class="coin-face coin-back">
+                        <div class="coin-content">
+                            <span class="fs-1">🦅</span>
+                            <div>TAILS</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-success spin-btn mt-5" @onclick="Flip" disabled="@isFlipping">
+                @if(isFlipping) { <span>Flipping...</span> } else { <span>FLIP!</span> }
+            </button>
+        </div>
+
+        <!-- Right Column: History -->
+        <div class="col-md-3 d-none d-md-block">
+            <div class="history-card">
+                <h4>History</h4>
+                <div class="history-list">
+                    @foreach(var result in _viewModel.History)
+                    {
+                        <div class="history-item @(result == "Heads" ? "is-heads" : "is-tails")">
+                            @result
+                        </div>
+                    }
+                    @if(_viewModel.History.Count == 0)
+                    {
+                        <div class="text-white-50 small mt-3">No flips yet</div>
+                    }
+                </div>
+                
+                @if(_viewModel.History.Count > 0)
+                {
+                    <button class="btn btn-sm btn-outline-light mt-3 w-100" @onclick="Reset">Reset</button>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobile Stats -->
+    <div class="row mt-5 d-md-none">
+        <div class="col-6">
+            <div class="stat-card small">
+                <h5>Heads</h5>
+                <span class="text-warning">@_viewModel.HeadsCount</span>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="stat-card small">
+                <h5>Tails</h5>
+                <span class="text-secondary">@_viewModel.TailsCount</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@code {
+    private CoinFlipViewModel _viewModel = null!;
+    private bool isFlipping = false;
+
+    protected override void OnInitialized()
+    {
+        _viewModel = new CoinFlipViewModel(RandomizerService);
+    }
+
+    private async Task Flip()
+    {
+        if (isFlipping) return;
+
+        isFlipping = true;
+        
+        await JSRuntime.InvokeVoidAsync("eval", "new Audio('sounds/coin-flip.mp3').play()");
+
+        await Task.Delay(75); 
+        
+        _viewModel.FlipCoin();
+        
+        await Task.Delay(2300);
+        
+        await JSRuntime.InvokeVoidAsync("eval", "new Audio('sounds/coin-drop.mp3').play()");
+
+        isFlipping = false;
+        _viewModel.FlipComplete();
+    }
+
+    private void Reset()
+    {
+        _viewModel.ResetStats();
+    }
+}
