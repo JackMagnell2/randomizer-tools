@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using RandomizerTools.Models;
 using RandomizerTools.Services;
 
 namespace RandomizerTools.ViewModels
 {
-    // Manages state and logic for the wheel of names tool
+    /// <summary>
+    /// Manages state and logic for the wheel of names tool
+    /// </summary>
     public class WheelOfNamesViewModel
     {
         private readonly RandomizerService _randomizer;
@@ -21,7 +22,9 @@ namespace RandomizerTools.ViewModels
             Entries = new List<WheelEntry>();
         }
 
-        // Adds an entry to the wheel
+        /// <summary>
+        /// Adds an entry to the wheel
+        /// </summary>
         public void AddEntry(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -32,7 +35,9 @@ namespace RandomizerTools.ViewModels
             Entries.Add(entry);
         }
 
-        // Removes an entry from the wheel
+        /// <summary>
+        /// Removes an entry from the wheel
+        /// </summary>
         public void RemoveEntry(WheelEntry entry)
         {
             if (entry == null)
@@ -41,7 +46,9 @@ namespace RandomizerTools.ViewModels
             Entries.Remove(entry);
         }
 
-        // Shuffles the entries list randomly
+        /// <summary>
+        /// Shuffles the entries list randomly
+        /// </summary>
         public void ShuffleEntries()
         {
             if (Entries.Count > 1)
@@ -50,7 +57,9 @@ namespace RandomizerTools.ViewModels
             }
         }
 
-        // Sorts the entries alphabetically
+        /// <summary>
+        /// Sorts the entries alphabetically
+        /// </summary>
         public void SortEntries()
         {
             if (Entries.Count > 1)
@@ -59,13 +68,17 @@ namespace RandomizerTools.ViewModels
             }
         }
 
-        // Removes all entries from the list
+        /// <summary>
+        /// Removes all entries from the list
+        /// </summary>
         public void ClearEntries()
         {
             Entries.Clear();
         }
 
-        // Spins the wheel and selects a random winner
+        /// <summary>
+        /// Spins the wheel and selects a random winner
+        /// </summary>
         public void SpinWheel()
         {
             if (Entries.Count == 0)
@@ -77,7 +90,9 @@ namespace RandomizerTools.ViewModels
             SelectedWinner = _randomizer.GetRandomItem(Entries);
         }
 
-        // Restores the list from storage
+        /// <summary>
+        /// Restores the list from storage
+        /// </summary>
         public void RestoreState(List<WheelEntry>? loadedEntries)
         {
             if (loadedEntries != null)

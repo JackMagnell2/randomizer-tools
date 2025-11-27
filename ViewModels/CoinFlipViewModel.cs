@@ -26,7 +26,6 @@ namespace RandomizerTools.ViewModels
         /// <summary>
         /// Determines result without updating stats
         /// </summary>
-        /// <returns></returns>
         public bool CalculateFlip()
         {
             _pendingIsHeads = _randomizer.FlipCoin();

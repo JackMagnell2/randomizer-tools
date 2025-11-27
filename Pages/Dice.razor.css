@@ -1,0 +1,175 @@
+/* Container for the dice */
+.dice-scene {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 3rem;
+    perspective: 1000px;
+    min-height: 200px;
+    margin-bottom: 2rem;
+}
+
+/* Individual die container */
+.die {
+    width: 100px;
+    height: 100px;
+}
+
+/* The 3D cube object */
+.cube {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateX(0deg) rotateY(0deg);
+    transition: transform 1.5s cubic-bezier(0.1, 0.9, 0.2, 1); 
+}
+
+/* Common face styling */
+.face {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background: white;
+    border: 1px solid #dfe6e9;
+    border-radius: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
+}
+
+/* Face specific positioning */
+.front  { transform: rotateY(0deg) translateZ(50px); }
+.back   { transform: rotateY(180deg) translateZ(50px); }
+.right  { transform: rotateY(900deg) rotateY(90deg) translateZ(50px); } 
+.left   { transform: rotateY(-90deg) translateZ(50px); }
+.top    { transform: rotateX(90deg) translateZ(50px); }
+.bottom { transform: rotateX(-90deg) translateZ(50px); }
+
+/* Dot pip styling */
+.dot {
+    width: 18px;
+    height: 18px;
+    background-color: #2c3e50;
+    border-radius: 50%;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+}
+
+/* Face 2 layout */
+.face.top { 
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+}
+.dot-top-right { align-self: flex-start; }
+.dot-bottom-left { align-self: flex-end; }
+
+/* Face 3 layout */
+.face.left { 
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+}
+.face.left .dot:nth-child(2) { align-self: center; }
+
+/* Face 4 layout */
+.face.right { 
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+}
+.dot-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Face 5 layout */
+.face.bottom { 
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+}
+
+/* Face 6 layout */
+.face.back { 
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+}
+
+/* Face 1 red dot override */
+.face.front .dot {
+    background-color: #e74c3c;
+    width: 24px;
+    height: 24px;
+}
+
+/* Spin button styling */
+.spin-btn {
+    font-size: 1.5rem;
+    font-family: 'Fredoka', sans-serif;
+    letter-spacing: 2px;
+    padding: 15px 50px;
+    border-radius: 60px;
+    background: linear-gradient(to bottom, #ffce00, #ffa502);
+    border: 4px solid #fff;
+    box-shadow: 0 8px 0 #e67e22, 0 15px 20px rgba(0,0,0,0.3);
+    transition: all 0.1s;
+    text-transform: uppercase;
+    color: #fff;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.2);
+}
+
+/* Button hover state */
+.spin-btn:hover:not(:disabled) {
+    transform: translateY(-3px);
+    filter: brightness(1.1);
+    box-shadow: 0 10px 0 #e67e22, 0 20px 30px rgba(255, 165, 2, 0.4);
+}
+
+/* Button active state */
+.spin-btn:active {
+    transform: translateY(5px);
+    box-shadow: 0 0 0 #e67e22;
+}
+
+/* Button disabled state */
+.spin-btn:disabled {
+    background: #b2bec3;
+    box-shadow: 0 4px 0 #636e72;
+    cursor: not-allowed;
+    transform: translateY(4px);
+    border-color: #dfe6e9;
+}
+
+/* History card styling */
+.history-card {
+    background: rgba(0,0,0,0.3);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: left;
+    max-height: 400px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* History list scroll area */
+.history-list {
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* History item styling */
+.history-item {
+    background: rgba(255,255,255,0.05);
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Fredoka', sans-serif;
+    text-align: center;
+}
