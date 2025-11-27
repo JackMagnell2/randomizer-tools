@@ -58,5 +58,16 @@ namespace RandomizerTools.ViewModels
             TailsCount = 0;
             History.Clear();
         }
+
+        /// <summary>
+        /// Restores state from persistence
+        /// </summary>
+        public void RestoreState(int heads, int tails, List<string> history, bool lastIsHeads)
+        {
+            HeadsCount = heads;
+            TailsCount = tails;
+            History = history ?? new List<string>();
+            IsHeads = lastIsHeads;
+        }
     }
 }

@@ -1,6 +1,7 @@
 @page "/coin"
 @using RandomizerTools.ViewModels
 @using RandomizerTools.Services
+@using System.Text.Json
 @inject RandomizerService RandomizerService
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
@@ -45,7 +46,7 @@
                 </div>
             </div>
 
-            <button class="btn btn-success spin-btn mt-5" @onclick="Flip" disabled="@isFlipping">
+            <button class="btn spin-btn mt-5" @onclick="Flip" disabled="@isFlipping">
                 @if(isFlipping) { <span>Flipping...</span> } else { <span>FLIP!</span> }
             </button>
         </div>
@@ -96,6 +97,7 @@
     private bool isFlipping = false;
     private DotNetObjectReference<CoinFlip>? objRef;
     private bool isJsInitialized = false;
+    private const string LocalStorageKey = "coin_stats";
 
     protected override void OnInitialized()
     {
@@ -107,8 +109,10 @@
     {
         if (firstRender)
         {
+            await LoadState();
             await JSRuntime.InvokeVoidAsync("coinHelper.init", objRef, "coinElement");
             isJsInitialized = true;
+            StateHasChanged();
         }
     }
 
@@ -132,23 +136,72 @@
 
     // Handles the animation completion event
     [JSInvokable]
-    public void OnFlipFinished()
+    public async Task OnFlipFinished()
     {
         _viewModel.CommitResult();
         isFlipping = false;
+        await SaveState();
         StateHasChanged();
     }
 
-    // Resets the view model
-    private void Reset()
+    // Resets the view model and storage
+    private async Task Reset()
     {
         _viewModel.ResetStats();
+        await SaveState();
     }
 
-    // Disposes the object reference
+    // Persists stats to local storage
+    private async Task SaveState()
+    {
+        var data = new 
+        {
+            Heads = _viewModel.HeadsCount,
+            Tails = _viewModel.TailsCount,
+            History = _viewModel.History,
+            LastIsHeads = _viewModel.IsHeads
+        };
+        var json = JsonSerializer.Serialize(data);
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", LocalStorageKey, json);
+    }
+
+    // Loads stats from local storage
+    private async Task LoadState()
+    {
+        var json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", LocalStorageKey);
+        if (!string.IsNullOrEmpty(json))
+        {
+            try 
+            {
+                var data = JsonSerializer.Deserialize<SavedCoinState>(json);
+                if (data != null)
+                {
+                    // Manually restore ViewModel state
+                    // Note: Ideally ViewModel would handle this, but keeping it simple here
+                    // requires accessing internal setters or modifying ViewModel.
+                    // For now, we will just use the ViewModel's public state if setters allow, 
+                    // or we need to add a Restore method to ViewModel.
+                    
+                    // Recommended: Add Restore method to ViewModel (see step below)
+                    _viewModel.RestoreState(data.Heads, data.Tails, data.History, data.LastIsHeads);
+                }
+            }
+            catch { }
+        }
+    }
+
     public ValueTask DisposeAsync()
     {
         objRef?.Dispose();
         return ValueTask.CompletedTask;
+    }
+
+    // Helper class for JSON serialization
+    private class SavedCoinState
+    {
+        public int Heads { get; set; }
+        public int Tails { get; set; }
+        public List<string> History { get; set; } = new();
+        public bool LastIsHeads { get; set; }
     }
 }
