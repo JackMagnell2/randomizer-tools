@@ -232,7 +232,7 @@ canvas#wheelCanvas {
 
 /* Spin button container */
 .spin-btn {
-    margin-top: -18px;
+    margin-top: -15px;
     position: relative;
     z-index: 10;
     font-size: 1.8rem;

@@ -1,12 +1,11 @@
 window.wheelHelper = {
     canvas: null,
     ctx: null,
-    entries: [], 
+    entries: [],
     totalWeight: 0,
     colors: [
-        "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40",
-        "#E7E9ED", "#5352ed", "#ff4757", "#2ed573", "#1e90ff", "#ffa502",
-        "#DAF7A6", "#FFC300", "#C70039", "#900C3F", "#581845"
+        "#c0392b", "#2c3e50", "#f1c40f", "#27ae60", "#2980b9", 
+        "#8e44ad", "#e67e22", "#16a085", "#7f8c8d", "#d35400"
     ],
     startAngle: 0,
     spinTimeout: null,
@@ -20,18 +19,29 @@ window.wheelHelper = {
     lastIndex: -1,
     arrowOffset: 0,
 
-    // Initializes canvas, audio context, and resize listeners
+    // Initializes canvas and audio context
     init: function (canvasId, dotNetReference) {
         this.canvas = document.getElementById(canvasId);
+        if (!this.canvas) return;
+        
         this.ctx = this.canvas.getContext("2d");
         this.dotNetRef = dotNetReference;
         
-        this.tickAudio = new Audio('sounds/tick.mp3');
-        this.winAudio = new Audio('sounds/win.mp3');
-        this.tickAudio.playbackRate = 1; 
+        try {
+            this.tickAudio = new Audio('sounds/tick.mp3');
+            this.winAudio = new Audio('sounds/win.mp3');
+        } catch (e) { }
 
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+    },
+
+    // Handles responsive resizing
+    resize: function() {
+        if(!this.canvas || !this.canvas.parentElement) return;
+        var rect = this.canvas.parentElement.getBoundingClientRect();
         var dpr = window.devicePixelRatio || 1;
-        var rect = this.canvas.getBoundingClientRect();
+        
         this.canvas.width = rect.width * dpr;
         this.canvas.height = rect.width * dpr;
         this.ctx.scale(dpr, dpr);
@@ -39,67 +49,45 @@ window.wheelHelper = {
         this.logicalWidth = rect.width;
         this.logicalHeight = rect.width;
 
-        window.removeEventListener('resize', this.resizeHandler);
-        this.resizeHandler = () => this.resize();
-        window.addEventListener('resize', this.resizeHandler);
-        
-        this.resize(); 
-    },
-
-    // Handles responsive resizing of the canvas
-    resize: function() {
-        if(!this.canvas) return;
-        var container = this.canvas.parentElement;
-        var newWidth = container.clientWidth;
-        
-        var dpr = window.devicePixelRatio || 1;
-        this.canvas.style.width = newWidth + "px";
-        this.canvas.style.height = newWidth + "px";
-        this.canvas.width = newWidth * dpr;
-        this.canvas.height = newWidth * dpr;
-        this.ctx.scale(dpr, dpr);
-        this.logicalWidth = newWidth;
-        this.logicalHeight = newWidth;
-
         this.draw();
     },
 
-    // Updates the list of entries and recalculates total weight
+    // Updates entries list
     setEntries: function (entriesList) {
         if (!Array.isArray(entriesList)) return;
         this.entries = entriesList;
-        this.totalWeight = this.entries.reduce((sum, entry) => sum + entry.weight, 0);
+        this.totalWeight = this.entries.reduce((sum, entry) => sum + (entry.weight || 0), 0);
         this.draw();
     },
 
-    // Main rendering loop for weighted slices
+    // Main drawing loop
     draw: function () {
-        if (!this.canvas) return;
+        if (!this.ctx) return;
 
         var baseSize = this.logicalWidth;
-        var outsideRadius = baseSize / 2 - 25; 
+        var outsideRadius = baseSize / 2 - 35; 
         var insideRadius = 0;
         var centerX = baseSize / 2;
         var centerY = baseSize / 2;
 
         this.ctx.clearRect(0, 0, this.logicalWidth, this.logicalHeight);
-        this.ctx.strokeStyle = "white";
+        
+        this.drawCasinoBezel(centerX, centerY, outsideRadius + 15);
+
         this.ctx.lineWidth = 2;
+        this.ctx.strokeStyle = "#ecf0f1"; 
 
         if (this.entries.length === 0) {
-            this.drawEmptyWheel(centerX, centerY, outsideRadius, insideRadius);
-            return;
-        }
-
-        if (this.entries.length === 1) {
-            this.drawSingleEntry(centerX, centerY, outsideRadius, baseSize);
+            this.drawEmptyWheel(centerX, centerY, outsideRadius);
             return;
         }
 
         let currentAngle = this.startAngle;
+        let safeTotal = this.totalWeight || 1;
 
         for (var i = 0; i < this.entries.length; i++) {
-            var sliceArc = (this.entries[i].weight / this.totalWeight) * (Math.PI * 2);
+            var weight = this.entries[i].weight || 0;
+            var sliceArc = (weight / safeTotal) * (Math.PI * 2);
             var endAngle = currentAngle + sliceArc;
 
             this.ctx.fillStyle = this.colors[i % this.colors.length];
@@ -110,7 +98,9 @@ window.wheelHelper = {
             this.ctx.fill();
             this.ctx.stroke();
 
-            this.drawSliceText(this.entries[i].name, currentAngle, sliceArc, centerX, centerY, outsideRadius, baseSize, this.entries.length);
+            if (this.entries.length <= 60) {
+                this.drawSliceText(this.entries[i].name, currentAngle, sliceArc, centerX, centerY, outsideRadius, baseSize, this.entries.length);
+            }
 
             currentAngle = endAngle;
         }
@@ -119,42 +109,8 @@ window.wheelHelper = {
         this.drawPointer(centerX, outsideRadius);
     },
 
-    // Helper to draw the empty wheel state
-    drawEmptyWheel: function(centerX, centerY, outsideRadius, insideRadius) {
-        var dummySegments = 8;
-        var dummyArc = Math.PI * 2 / dummySegments;
-        for (var i = 0; i < dummySegments; i++) {
-            var angle = this.startAngle + i * dummyArc;
-            this.ctx.fillStyle = (i % 2 === 0) ? "#f0f0f0" : "#e0e0e0";
-            this.ctx.beginPath();
-            this.ctx.arc(centerX, centerY, outsideRadius, angle, angle + dummyArc, false);
-            this.ctx.arc(centerX, centerY, insideRadius, angle + dummyArc, angle, true);
-            this.ctx.lineTo(centerX + Math.cos(angle) * outsideRadius, centerY + Math.sin(angle) * outsideRadius);
-            this.ctx.fill();
-            this.ctx.stroke();
-        }
-        this.drawCenterHub(centerX);
-        this.drawPointer(centerX, outsideRadius);
-    },
-
-    // Helper to draw a single entry wheel
-    drawSingleEntry: function(centerX, centerY, outsideRadius, baseSize) {
-        this.ctx.fillStyle = this.colors[0];
-        this.ctx.beginPath();
-        this.ctx.arc(centerX, centerY, outsideRadius, 0, 2 * Math.PI);
-        this.ctx.fill();
-        this.ctx.stroke();
-        
-        this.drawCenterHub(centerX);
-        
-        // Draw text using standard slice logic so it aligns to the side
-        this.drawSliceText(this.entries[0].name, 0, Math.PI * 2, centerX, centerY, outsideRadius, baseSize, 1);
-
-        this.drawPointer(centerX, outsideRadius);
-    },
-
-    // Helper to draw text on a slice
-    drawSliceText: function(text, angle, arc, centerX, centerY, outsideRadius, baseSize, totalEntries) {
+    // Renders text on slices with collision detection
+    drawSliceText: function(text, angle, arc, centerX, centerY, outsideRadius, baseSize, count) {
         this.ctx.save();
         this.ctx.translate(centerX, centerY);
         var textAngle = angle + arc / 2;
@@ -162,71 +118,126 @@ window.wheelHelper = {
         this.ctx.translate(outsideRadius - 30, 0); 
         this.ctx.textAlign = "right";
         this.ctx.fillStyle = "white";
-        this.ctx.shadowColor = "rgba(0,0,0,0.5)";
+        this.ctx.shadowColor = "rgba(0,0,0,0.8)";
         this.ctx.shadowBlur = 4;
         this.ctx.textBaseline = "middle";
         
         if (text.length > 15) text = text.substring(0, 15) + "...";
+        
         var maxFont = baseSize / 22; 
-        if (totalEntries > 12) maxFont = baseSize / 28;
-        var minFont = 10;
+        if (count === 1) maxFont = baseSize / 10;
         
-        // Allow single entry to be larger, but keep it aligned
-        if (totalEntries === 1) maxFont = baseSize / 12;
+        var hubRadius = 45; 
+        var availableWidth = outsideRadius - 30 - hubRadius;
 
-        var radiusSpace = outsideRadius - 30 - (outsideRadius * 0.25);
-        
         this.ctx.font = 'bold ' + maxFont + 'px Helvetica, Arial';
+        
         var width = this.ctx.measureText(text).width;
-        var currentFont = maxFont;
-        while (width > radiusSpace && currentFont > minFont) {
-            currentFont -= 1;
-            this.ctx.font = 'bold ' + currentFont + 'px Helvetica, Arial';
+        while (width > availableWidth) {
+            maxFont--;
+            if (maxFont < 8) break;
+            this.ctx.font = 'bold ' + maxFont + 'px Helvetica, Arial';
             width = this.ctx.measureText(text).width;
         }
+        
         this.ctx.fillText(text, 0, 0);
         this.ctx.restore();
     },
 
-    // Draws the center decorative hub
+    // Draws casino bezel graphics
+    drawCasinoBezel: function(centerX, centerY, radius) {
+        this.ctx.save();
+        var gradient = this.ctx.createLinearGradient(centerX - radius, centerY - radius, centerX + radius, centerY + radius);
+        gradient.addColorStop(0, '#f1c40f');
+        gradient.addColorStop(0.5, '#f39c12');
+        gradient.addColorStop(1, '#f1c40f');
+        
+        this.ctx.beginPath();
+        this.ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        this.ctx.fillStyle = gradient;
+        this.ctx.fill();
+        this.ctx.shadowColor = "rgba(0,0,0,0.5)";
+        this.ctx.shadowBlur = 15;
+        this.ctx.stroke();
+
+        this.ctx.beginPath();
+        this.ctx.arc(centerX, centerY, radius - 15, 0, 2 * Math.PI);
+        this.ctx.fillStyle = "#2c3e50"; 
+        this.ctx.fill();
+
+        var totalLights = 24;
+        var step = (Math.PI * 2) / totalLights;
+        for(var i = 0; i < totalLights; i++) {
+            var a = i * step + this.startAngle; 
+            var lx = centerX + Math.cos(a) * (radius - 7.5);
+            var ly = centerY + Math.sin(a) * (radius - 7.5);
+            this.ctx.beginPath();
+            this.ctx.arc(lx, ly, 4, 0, 2 * Math.PI);
+            this.ctx.fillStyle = (i % 2 === 0) ? "#fff" : "#ffeb3b"; 
+            this.ctx.fill();
+        }
+        this.ctx.restore();
+    },
+
+    // Draws empty state placeholder
+    drawEmptyWheel: function(centerX, centerY, radius) {
+        var segments = 8;
+        var arc = Math.PI * 2 / segments;
+        for (var i = 0; i < segments; i++) {
+            var angle = this.startAngle + i * arc;
+            this.ctx.fillStyle = (i % 2 === 0) ? "#34495e" : "#2c3e50"; 
+            this.ctx.beginPath();
+            this.ctx.arc(centerX, centerY, radius, angle, angle + arc, false);
+            this.ctx.lineTo(centerX, centerY);
+            this.ctx.fill();
+            this.ctx.stroke();
+        }
+        this.drawCenterHub(centerX);
+        this.drawPointer(centerX, radius);
+    },
+
+    // Draws center hub graphics
     drawCenterHub: function(centerX) {
         this.ctx.save();
+        var gradient = this.ctx.createLinearGradient(centerX - 25, centerX - 25, centerX + 25, centerX + 25);
+        gradient.addColorStop(0, '#bdc3c7');
+        gradient.addColorStop(1, '#2c3e50');
+        
         this.ctx.beginPath();
-        this.ctx.arc(centerX, centerX, 25, 0, 2 * Math.PI);
-        this.ctx.fillStyle = "white";
-        this.ctx.shadowColor = "rgba(0,0,0,0.2)";
-        this.ctx.shadowBlur = 5;
+        this.ctx.arc(centerX, centerX, 30, 0, 2 * Math.PI);
+        this.ctx.fillStyle = gradient;
         this.ctx.fill();
         
         this.ctx.beginPath();
-        this.ctx.arc(centerX, centerX, 10, 0, 2 * Math.PI);
-        this.ctx.fillStyle = "#ffce00"; 
+        this.ctx.arc(centerX, centerX, 12, 0, 2 * Math.PI);
+        this.ctx.fillStyle = "#f1c40f"; 
         this.ctx.fill();
         this.ctx.restore();
     },
 
-    // Draws the top pointer arrow
+    // Draws pointer arrow
     drawPointer: function(centerX, radius) {
         this.ctx.save();
-        
         this.ctx.translate(centerX, 5);
         this.ctx.rotate(this.arrowOffset);
         this.ctx.translate(-centerX, -5);
+        this.arrowOffset *= 0.9; 
 
-        this.arrowOffset *= 0.9;
-
-        this.ctx.fillStyle = "#333";
-        this.ctx.shadowColor = "rgba(0,0,0,0.3)";
+        this.ctx.fillStyle = "#e74c3c"; 
         this.ctx.shadowBlur = 5;
+        this.ctx.shadowColor = "rgba(0,0,0,0.3)";
         this.ctx.beginPath();
-        this.ctx.moveTo(centerX - 25, 5); 
-        this.ctx.lineTo(centerX + 25, 5);
-        this.ctx.lineTo(centerX, 55); 
+        this.ctx.moveTo(centerX - 20, -10); 
+        this.ctx.lineTo(centerX + 20, -10);
+        this.ctx.lineTo(centerX, 60); 
         this.ctx.fill();
+        this.ctx.strokeStyle = "#f1c40f";
+        this.ctx.lineWidth = 3;
+        this.ctx.stroke();
         this.ctx.restore();
     },
 
-    // Starts the spin animation
+    // Starts spin animation
     spin: function () {
         if(this.isSpinning || this.entries.length === 0) return;
         this.isSpinning = true;
@@ -237,7 +248,7 @@ window.wheelHelper = {
         this.rotateWheel();
     },
 
-    // Loops the animation frame
+    // Loops animation frame
     rotateWheel: function () {
         this.spinTime += 30;
         if (this.spinTime >= this.spinTimeTotal) {
@@ -249,18 +260,16 @@ window.wheelHelper = {
         this.startAngle += (spinAngle * Math.PI / 180);
         
         var degrees = this.startAngle * 180 / Math.PI + 90;
-        var currentIndex = 0;
-        var currentAngleSum = 0;
-        
-        // Calculate current slice for weighted list
-        var normalizedRotation = (this.startAngle % (Math.PI * 2));
-        if (normalizedRotation < 0) normalizedRotation += Math.PI * 2;
-        var pointerAngle = (Math.PI * 1.5 - normalizedRotation);
+        var pointerAngle = (Math.PI * 1.5 - (this.startAngle % (Math.PI * 2)));
         pointerAngle = (pointerAngle % (Math.PI * 2) + (Math.PI * 2)) % (Math.PI * 2);
+        
+        var currentAngleSum = 0;
+        var currentIndex = 0;
+        var safeTotal = this.totalWeight || 1;
 
         for(var i=0; i<this.entries.length; i++) {
-            var sliceArc = (this.entries[i].weight / this.totalWeight) * (Math.PI * 2);
-            currentAngleSum += sliceArc;
+            var arc = ((this.entries[i].weight || 0) / safeTotal) * (Math.PI * 2);
+            currentAngleSum += arc;
             if(pointerAngle < currentAngleSum) {
                 currentIndex = i;
                 break;
@@ -268,7 +277,10 @@ window.wheelHelper = {
         }
 
         if (this.lastIndex !== -1 && this.lastIndex !== currentIndex) {
-            this.playTick();
+            if(this.tickAudio) {
+                this.tickAudio.currentTime = 0;
+                this.tickAudio.play().catch(()=>{});
+            }
             this.arrowOffset = -0.3;
         }
         this.lastIndex = currentIndex;
@@ -277,32 +289,23 @@ window.wheelHelper = {
         this.spinTimeout = setTimeout(() => this.rotateWheel(), 30);
     },
 
-    // Plays audio tick
-    playTick: function() {
-        if (this.tickAudio) {
-            this.tickAudio.currentTime = 0;
-            this.tickAudio.play().catch(e => {}); 
-        }
-    },
-
-    // Ends rotation and determines winner based on final angle and weights
+    // Ends rotation and selects winner
     stopRotateWheel: function () {
         clearTimeout(this.spinTimeout);
         
         var currentRotation = this.startAngle % (Math.PI * 2);
         if (currentRotation < 0) currentRotation += Math.PI * 2;
-
-        var pointerAngleOnWheel = (Math.PI * 1.5 - currentRotation);
-        pointerAngleOnWheel = (pointerAngleOnWheel % (Math.PI * 2) + (Math.PI * 2)) % (Math.PI * 2);
+        var pointerAngle = (Math.PI * 1.5 - currentRotation);
+        pointerAngle = (pointerAngle % (Math.PI * 2) + (Math.PI * 2)) % (Math.PI * 2);
 
         var winnerIndex = -1;
-        var currentSliceEndAngle = 0;
+        var currentAngleSum = 0;
+        var safeTotal = this.totalWeight || 1;
 
         for (var i = 0; i < this.entries.length; i++) {
-            var sliceArc = (this.entries[i].weight / this.totalWeight) * (Math.PI * 2);
-            currentSliceEndAngle += sliceArc;
-
-            if (pointerAngleOnWheel < currentSliceEndAngle) {
+            var arc = ((this.entries[i].weight || 0) / safeTotal) * (Math.PI * 2);
+            currentAngleSum += arc;
+            if (pointerAngle < currentAngleSum) {
                 winnerIndex = i;
                 break;
             }
@@ -315,14 +318,19 @@ window.wheelHelper = {
         
         if (this.winAudio) {
             this.winAudio.currentTime = 0;
-            this.winAudio.play().catch(e => {});
+            this.winAudio.play().catch(()=>{});
         }
 
-        this.fireConfetti();
-        this.dotNetRef.invokeMethodAsync('OnSpinFinished', winnerName);
+        if (typeof confetti === 'function') {
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: this.colors });
+        }
+        
+        if(this.dotNetRef) {
+            this.dotNetRef.invokeMethodAsync('OnSpinFinished', winnerName);
+        }
     },
 
-    // Easing math for deceleration
+    // Deceleration physics
     easeOut: function (t, b, c, d) {
         var ts = (t /= d) * t;
         var tc = ts * t;
