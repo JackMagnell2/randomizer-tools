@@ -3,21 +3,19 @@
 @using RandomizerTools.Services
 @inject RandomizerService RandomizerService
 @inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
 <PageTitle>Coin Flip - RandomizerTools</PageTitle>
 
 <div class="container py-5 text-center">
     
-    <!-- Header -->
     <div class="mb-5">
         <h1 class="display-4 fw-bold text-white mb-2" style="font-family: 'Fredoka', sans-serif;">Coin Flip</h1>
         <p class="text-white-50">Flip a coin to settle a bet or make a decision!</p>
     </div>
 
-    <!-- Main Game Area -->
     <div class="row justify-content-center align-items-center g-5">
         
-        <!-- Left Column: Stats -->
         <div class="col-md-3 d-none d-md-block">
             <div class="stat-card">
                 <h3>Heads</h3>
@@ -29,11 +27,9 @@
             </div>
         </div>
 
-        <!-- Center Column: The Coin -->
         <div class="col-md-6">
             <div class="scene">
-                <!-- The Coin Div: Rotates based on IsHeads and IsFlipping -->
-                <div class="coin @(isFlipping ? "flipping" : "") @(_viewModel.IsHeads ? "heads" : "tails")" @onclick="Flip">
+                <div id="coinElement" class="coin @(GetCoinStateClass())">
                     <div class="coin-face coin-front">
                         <div class="coin-content">
                             <span class="fs-1">👑</span>
@@ -54,7 +50,6 @@
             </button>
         </div>
 
-        <!-- Right Column: History -->
         <div class="col-md-3 d-none d-md-block">
             <div class="history-card">
                 <h4>History</h4>
@@ -73,13 +68,12 @@
                 
                 @if(_viewModel.History.Count > 0)
                 {
-                    <button class="btn btn-sm btn-outline-light mt-3 w-100" @onclick="Reset">Reset</button>
+                    <button class="btn btn-sm btn-outline-light mt-3 w-100" @onclick="Reset" disabled="@isFlipping">Reset</button>
                 }
             </div>
         </div>
     </div>
     
-    <!-- Mobile Stats -->
     <div class="row mt-5 d-md-none">
         <div class="col-6">
             <div class="stat-card small">
@@ -100,34 +94,61 @@
 @code {
     private CoinFlipViewModel _viewModel = null!;
     private bool isFlipping = false;
+    private DotNetObjectReference<CoinFlip>? objRef;
+    private bool isJsInitialized = false;
 
     protected override void OnInitialized()
     {
         _viewModel = new CoinFlipViewModel(RandomizerService);
+        objRef = DotNetObjectReference.Create(this);
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("coinHelper.init", objRef, "coinElement");
+            isJsInitialized = true;
+        }
+    }
+
+    // Returns the current visual state
+    private string GetCoinStateClass()
+    {
+        return _viewModel.IsHeads ? "heads" : "tails";
+    }
+
+    // Initiates the flip sequence
     private async Task Flip()
     {
-        if (isFlipping) return;
+        if (isFlipping || !isJsInitialized) return;
 
         isFlipping = true;
         
-        await JSRuntime.InvokeVoidAsync("eval", "new Audio('sounds/coin-flip.mp3').play()");
+        bool resultIsHeads = _viewModel.CalculateFlip();
 
-        await Task.Delay(75); 
-        
-        _viewModel.FlipCoin();
-        
-        await Task.Delay(2300);
-        
-        await JSRuntime.InvokeVoidAsync("eval", "new Audio('sounds/coin-drop.mp3').play()");
-
-        isFlipping = false;
-        _viewModel.FlipComplete();
+        await JSRuntime.InvokeVoidAsync("coinHelper.animateFlip", resultIsHeads);
     }
 
+    // Handles the animation completion event
+    [JSInvokable]
+    public void OnFlipFinished()
+    {
+        _viewModel.CommitResult();
+        isFlipping = false;
+        StateHasChanged();
+    }
+
+    // Resets the view model
     private void Reset()
     {
         _viewModel.ResetStats();
+    }
+
+    // Disposes the object reference
+    public ValueTask DisposeAsync()
+    {
+        objRef?.Dispose();
+        return ValueTask.CompletedTask;
     }
 }

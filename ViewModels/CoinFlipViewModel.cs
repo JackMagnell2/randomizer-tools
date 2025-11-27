@@ -1,27 +1,22 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using RandomizerTools.Services;
 
 namespace RandomizerTools.ViewModels
 {
     /// <summary>
-    /// Manages state and logic for the coin flip tool
+    /// Manages state for the coin flip tool
     /// </summary>
     public class CoinFlipViewModel
     {
         private readonly RandomizerService _randomizer;
+        
+        private bool _pendingIsHeads; 
 
         public bool IsHeads { get; private set; } = true;
-
-        public bool IsFlipping { get; private set; } = false;
-
         public int HeadsCount { get; private set; }
-
         public int TailsCount { get; private set; }
-
-        public List<String> History { get; private set; } = new List<String>();
+        public List<string> History { get; private set; } = new List<string>();
 
         public CoinFlipViewModel(RandomizerService randomizer)
         {
@@ -29,34 +24,33 @@ namespace RandomizerTools.ViewModels
         }
 
         /// <summary>
-        /// Flips the coin and updates stats
+        /// Determines result without updating stats
         /// </summary>
-        public void FlipCoin()
+        /// <returns></returns>
+        public bool CalculateFlip()
         {
-            if (IsFlipping) return;
+            _pendingIsHeads = _randomizer.FlipCoin();
+            return _pendingIsHeads;
+        }
 
-            IsFlipping = true;
-
-            bool result = _randomizer.FlipCoin();
-            IsHeads = result;
+        /// <summary>
+        /// Updates history and counters
+        /// </summary>
+        public void CommitResult()
+        {
+            IsHeads = _pendingIsHeads;
 
             if (IsHeads) HeadsCount++;
             else TailsCount++;
 
             History.Insert(0, IsHeads ? "Heads" : "Tails");
-            if (History.Count > 10) History.RemoveAt(10);
+            
+            if (History.Count > 10) 
+                History.RemoveAt(10);
         }
 
         /// <summary>
-        /// Resets the flipping state
-        /// </summary>
-        public void FlipComplete()
-        {
-            IsFlipping = false;
-        }
-
-        /// <summary>
-        /// Resets all stats
+        /// Resets all game data
         /// </summary>
         public void ResetStats()
         {
