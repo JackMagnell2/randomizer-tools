@@ -1,0 +1,233 @@
+@page "/dice"
+@using RandomizerTools.ViewModels
+@using RandomizerTools.Services
+@using System.Text.Json
+@inject RandomizerService RandomizerService
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<PageTitle>Dice Roller - RandomizerTools</PageTitle>
+
+<div class="container py-5 text-center">
+    
+    <div class="mb-4">
+        <h1 class="display-4 fw-bold text-white mb-2" style="font-family: 'Fredoka', sans-serif;">Dice Roller</h1>
+        <p class="text-white-50">Roll up to 6 dice at once!</p>
+    </div>
+
+    <div class="row justify-content-center align-items-start g-4">
+        
+        <div class="col-lg-8">
+            
+            <div class="controls-bar mb-5">
+                <label class="text-white me-3 fw-bold">Number of Dice:</label>
+                <div class="btn-group">
+                    @for (int i = 1; i <= 6; i++)
+                    {
+                        var count = i; 
+                        <button class="btn @(count == _viewModel.DiceCount ? "btn-light" : "btn-outline-light")" 
+                                @onclick="() => ChangeDiceCount(count)"
+                                disabled="@isRolling">
+                            @count
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <div class="dice-scene">
+                @for (int i = 0; i < _viewModel.DiceCount; i++)
+                {
+                    <div class="die">
+                        <div id="die-cube-@i" class="cube">
+                            <div class="face front">
+                                <span class="dot"></span>
+                            </div>
+                            
+                            <div class="face back">
+                                <div class="dot-col">
+                                    <span class="dot"></span>
+                                    <span class="dot"></span>
+                                    <span class="dot"></span>
+                                </div>
+                                <div class="dot-col">
+                                    <span class="dot"></span>
+                                    <span class="dot"></span>
+                                    <span class="dot"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="face right">
+                                <div class="dot-col">
+                                    <span class="dot"></span>
+                                    <span class="dot"></span>
+                                </div>
+                                <div class="dot-col">
+                                    <span class="dot"></span>
+                                    <span class="dot"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="face left">
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                            </div>
+                            
+                            <div class="face top">
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                            </div>
+                            
+                            <div class="face bottom">
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="mt-4 fade-in @(isRolling ? "opacity-0" : "opacity-100")">
+                <h2 class="text-white fw-bold">Total: <span class="text-warning">@_viewModel.TotalSum</span></h2>
+            </div>
+
+            <button class="btn spin-btn mt-4" @onclick="Roll" disabled="@isRolling">
+                @if(isRolling) { <span>Rolling...</span> } else { <span>ROLL!</span> }
+            </button>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="history-card">
+                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-white-50 pb-2">
+                    <h4 class="mb-0 text-white">History</h4>
+                    @if(_viewModel.History.Count > 0)
+                    {
+                        <button class="btn btn-sm btn-link text-white-50 p-0 text-decoration-none" @onclick="ClearHistory">Clear</button>
+                    }
+                </div>
+                
+                <div class="history-list">
+                    @foreach(var item in _viewModel.History)
+                    {
+                        <div class="history-item">@item</div>
+                    }
+                    @if(_viewModel.History.Count == 0)
+                    {
+                        <div class="text-white-50 small text-center mt-3">No rolls yet</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private DiceViewModel _viewModel = null!;
+    private bool isRolling = false;
+    private DotNetObjectReference<Dice>? objRef;
+    private bool isJsInitialized = false;
+    private const string LocalStorageKey = "dice_stats";
+
+    // Initializes view model and object reference
+    protected override void OnInitialized()
+    {
+        _viewModel = new DiceViewModel(RandomizerService);
+        objRef = DotNetObjectReference.Create(this);
+    }
+
+    // Handles initial rendering setup
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadState();
+            await JSRuntime.InvokeVoidAsync("diceHelper.init", objRef);
+            
+            await Task.Delay(50); 
+            await ResetVisuals();
+            
+            isJsInitialized = true;
+            StateHasChanged();
+        }
+    }
+
+    // Updates dice count and state
+    private async Task ChangeDiceCount(int count)
+    {
+        if (isRolling) return;
+        _viewModel.SetDiceCount(count);
+        await ResetVisuals();
+        await SaveState();
+    }
+
+    // Resets visual rotation without animation
+    private async Task ResetVisuals()
+    {
+        await JSRuntime.InvokeVoidAsync("diceHelper.resetDice", _viewModel.CurrentValues);
+    }
+
+    // Trigger the roll sequence
+    private async Task Roll()
+    {
+        if (isRolling || !isJsInitialized) return;
+
+        isRolling = true;
+        var results = _viewModel.CalculateRoll();
+        
+        await JSRuntime.InvokeVoidAsync("diceHelper.rollDice", results);
+    }
+
+    // Handles the completion of the roll animation
+    [JSInvokable]
+    public async Task OnRollFinished()
+    {
+        _viewModel.CommitResult();
+        isRolling = false;
+        await SaveState();
+        StateHasChanged();
+    }
+
+    // Clears the history list
+    private async Task ClearHistory()
+    {
+        _viewModel.ClearHistory();
+        await SaveState();
+    }
+
+    // Saves current state to storage
+    private async Task SaveState()
+    {
+        var data = new { Count = _viewModel.DiceCount, Values = _viewModel.CurrentValues, History = _viewModel.History };
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", LocalStorageKey, JsonSerializer.Serialize(data));
+    }
+
+    // Loads saved state from storage
+    private async Task LoadState()
+    {
+        var json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", LocalStorageKey);
+        if (!string.IsNullOrEmpty(json))
+        {
+            try {
+                var data = JsonSerializer.Deserialize<SavedDiceState>(json);
+                if (data != null) _viewModel.RestoreState(data.Count, data.Values, data.History);
+            } catch {}
+        }
+    }
+
+    // Disposes the object reference
+    public ValueTask DisposeAsync()
+    {
+        objRef?.Dispose();
+        return ValueTask.CompletedTask;
+    }
+
+    // Helper class for JSON serialization
+    private class SavedDiceState {
+        public int Count { get; set; }
+        public List<int> Values { get; set; } = new();
+        public List<string> History { get; set; } = new();
+    }
+}

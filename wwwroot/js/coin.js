@@ -50,6 +50,10 @@ window.coinHelper = {
             this.audioWin.play().catch(e => console.log(e));
         }
 
+        if (navigator.vibrate) {
+            navigator.vibrate(15);
+        }
+
         if (this.dotNetRef) {
             this.dotNetRef.invokeMethodAsync('OnFlipFinished');
         }
