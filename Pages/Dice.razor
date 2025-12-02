@@ -12,7 +12,7 @@
     
     <div class="mb-4">
         <h1 class="display-4 fw-bold text-white mb-2" style="font-family: 'Fredoka', sans-serif;">Dice Roller</h1>
-        <p class="text-white-50">Roll up to 6 dice at once!</p>
+        <p class="text-white-50">Click dice to hold them</p>
     </div>
 
     <div class="row justify-content-center align-items-start g-4">
@@ -37,7 +37,8 @@
             <div class="dice-scene">
                 @for (int i = 0; i < _viewModel.DiceCount; i++)
                 {
-                    <div class="die">
+                    var index = i;
+                    <div class="die @(_viewModel.HeldDice[index] ? "held" : "")" @onclick="() => ToggleDie(index)">
                         <div id="die-cube-@i" class="cube">
                             <div class="face front">
                                 <span class="dot"></span>
@@ -103,10 +104,13 @@
             <div class="history-card">
                 <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-white-50 pb-2">
                     <h4 class="mb-0 text-white">History</h4>
-                    @if(_viewModel.History.Count > 0)
-                    {
-                        <button class="btn btn-sm btn-link text-white-50 p-0 text-decoration-none" @onclick="ClearHistory">Clear</button>
-                    }
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-link text-warning p-0 text-decoration-none" @onclick="ResetHolds" title="Unlock all dice">Unlock All</button>
+                        @if(_viewModel.History.Count > 0)
+                        {
+                            <button class="btn btn-sm btn-link text-white-50 p-0 text-decoration-none" @onclick="ClearHistory">Clear</button>
+                        }
+                    </div>
                 </div>
                 
                 <div class="history-list">
@@ -138,7 +142,7 @@
         objRef = DotNetObjectReference.Create(this);
     }
 
-    // Handles initial rendering setup
+    // Handles initial rendering setup and restores visual state
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -146,19 +150,22 @@
             await LoadState();
             await JSRuntime.InvokeVoidAsync("diceHelper.init", objRef);
             
+            StateHasChanged();
             await Task.Delay(50); 
+            
             await ResetVisuals();
             
             isJsInitialized = true;
-            StateHasChanged();
         }
     }
 
-    // Updates dice count and state
+    // Updates dice count and refreshes visuals
     private async Task ChangeDiceCount(int count)
     {
         if (isRolling) return;
         _viewModel.SetDiceCount(count);
+        StateHasChanged(); 
+        await Task.Delay(10); 
         await ResetVisuals();
         await SaveState();
     }
@@ -169,7 +176,22 @@
         await JSRuntime.InvokeVoidAsync("diceHelper.resetDice", _viewModel.CurrentValues);
     }
 
-    // Trigger the roll sequence
+    // Toggles the held state of a specific die
+    private void ToggleDie(int index)
+    {
+        if (isRolling) return;
+        _viewModel.ToggleHold(index);
+    }
+
+    // Unlocks all currently held dice
+    private async Task ResetHolds()
+    {
+        if (isRolling) return;
+        _viewModel.ClearHolds();
+        await SaveState();
+    }
+
+    // Triggers the roll sequence
     private async Task Roll()
     {
         if (isRolling || !isJsInitialized) return;
@@ -177,7 +199,7 @@
         isRolling = true;
         var results = _viewModel.CalculateRoll();
         
-        await JSRuntime.InvokeVoidAsync("diceHelper.rollDice", results);
+        await JSRuntime.InvokeVoidAsync("diceHelper.rollDice", results, _viewModel.HeldDice);
     }
 
     // Handles the completion of the roll animation
@@ -197,14 +219,19 @@
         await SaveState();
     }
 
-    // Saves current state to storage
+    // Saves current state to local storage
     private async Task SaveState()
     {
-        var data = new { Count = _viewModel.DiceCount, Values = _viewModel.CurrentValues, History = _viewModel.History };
+        var data = new { 
+            Count = _viewModel.DiceCount, 
+            Values = _viewModel.CurrentValues, 
+            History = _viewModel.History, 
+            HeldDice = _viewModel.HeldDice 
+        };
         await JSRuntime.InvokeVoidAsync("localStorage.setItem", LocalStorageKey, JsonSerializer.Serialize(data));
     }
 
-    // Loads saved state from storage
+    // Loads saved state from local storage
     private async Task LoadState()
     {
         var json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", LocalStorageKey);
@@ -212,7 +239,7 @@
         {
             try {
                 var data = JsonSerializer.Deserialize<SavedDiceState>(json);
-                if (data != null) _viewModel.RestoreState(data.Count, data.Values, data.History);
+                if (data != null) _viewModel.RestoreState(data.Count, data.Values, data.History, data.HeldDice);
             } catch {}
         }
     }
@@ -229,5 +256,6 @@
         public int Count { get; set; }
         public List<int> Values { get; set; } = new();
         public List<string> History { get; set; } = new();
+        public List<bool> HeldDice { get; set; } = new();
     }
 }

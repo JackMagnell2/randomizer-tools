@@ -10,18 +10,19 @@ namespace RandomizerTools.ViewModels
     public class DiceViewModel
     {
         private readonly RandomizerService _randomizer;
-
         private List<int> _pendingResults = new();
 
-        public int DiceCount { get; set; } = 1;
+        public int DiceCount { get; private set; } = 1;
         public List<int> CurrentValues { get; private set; } = new();
+        public List<bool> HeldDice { get; private set; } = new();
         public List<string> History { get; private set; } = new();
         public int TotalSum => CurrentValues.Sum();
 
         public DiceViewModel(RandomizerService randomizer)
         {
             _randomizer = randomizer;
-            CurrentValues.Add(1);
+            SetDiceCount(1);
+            CurrentValues[0] = 1;
         }
 
         /// <summary>
@@ -36,17 +37,47 @@ namespace RandomizerTools.ViewModels
 
             while (CurrentValues.Count < DiceCount) CurrentValues.Add(1);
             while (CurrentValues.Count > DiceCount) CurrentValues.RemoveAt(CurrentValues.Count - 1);
+
+            while (HeldDice.Count < DiceCount) HeldDice.Add(false);
+            while (HeldDice.Count > DiceCount) HeldDice.RemoveAt(HeldDice.Count -1);
         }
 
         /// <summary>
-        /// Calculates random values for all dice
+        /// Holds chosen dice
+        /// </summary>
+        public void ToggleHold(int index)
+        {
+            if (index >= 0 && index < HeldDice.Count)
+            {
+                HeldDice[index] = !HeldDice[index];
+            }
+        }
+
+        public void ClearHolds()
+        {
+            for (int i = 0; i < HeldDice.Count; i++)
+            {
+                HeldDice[i] = false;
+            }
+        }
+
+        /// <summary>
+        /// Calculates random values for all non held dice
         /// </summary>
         public List<int> CalculateRoll()
         {
             _pendingResults.Clear();
             for (int i = 0; i < DiceCount; i++)
             {
-                _pendingResults.Add(_randomizer.RollDice(6));
+                if (HeldDice[i])
+                {
+                    _pendingResults.Add(CurrentValues[i]);
+                }
+
+                else
+                {
+                    _pendingResults.Add(_randomizer.RollDice(6));
+                }
             }
 
             return _pendingResults;
@@ -69,12 +100,22 @@ namespace RandomizerTools.ViewModels
         /// <summary>
         /// Restores state from local storage
         /// </summary>
-        public void RestoreState(int diceCount, List<int> currentValues, List<string> history)
+        public void RestoreState(int diceCount, List<int> currentValues, List<string> history, List<bool> heldDice)
         {
             SetDiceCount(diceCount);
             if (currentValues != null && currentValues.Count == DiceCount)
             {
                 CurrentValues = currentValues;
+            }
+
+            if (heldDice != null && heldDice.Count == DiceCount)
+            {
+                HeldDice = new List<bool>(heldDice);
+            }
+
+            else
+            {
+                ClearHolds();
             }
 
             History = history ?? new List<string>();
