@@ -49,7 +49,7 @@ window.diceHelper = {
     },
 
     // Animates the dice using cumulative rotation
-    rollDice: function (results) {
+    rollDice: function (results, heldStates) {
         if (!Array.isArray(results)) return;
 
         if (this.audioShake) {
@@ -58,6 +58,14 @@ window.diceHelper = {
         }
 
         let completedCount = 0;
+        
+        const activeDiceCount = results.filter((_, i) => !heldStates || !heldStates[i]).length;
+        
+        if (activeDiceCount === 0) {
+            this.finishRoll();
+            return;
+        }
+
         const totalDice = results.length;
 
         while (this.dieStates.length < totalDice) {
@@ -67,6 +75,10 @@ window.diceHelper = {
         results.forEach((resultValue, index) => {
             const dieCube = document.getElementById(`die-cube-${index}`);
             if (!dieCube) return;
+
+            if (heldStates && heldStates[index]) {
+                return; 
+            }
 
             const target = this.faceRotations[resultValue];
             const current = this.dieStates[index];
@@ -94,7 +106,7 @@ window.diceHelper = {
                 dieCube.removeEventListener('transitionend', onTransitionEnd);
                 completedCount++;
 
-                if (completedCount === totalDice) {
+                if (completedCount === activeDiceCount) {
                     this.finishRoll();
                 }
             };
