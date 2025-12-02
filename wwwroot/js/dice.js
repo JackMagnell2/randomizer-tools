@@ -2,13 +2,13 @@ window.diceHelper = {
     dotNetRef: null,
     audioShake: null,
     audioLand: null,
-    diceContainer: null,
+    dieStates: [],
 
     faceRotations: {
         1: [0, 0],
         2: [-90, 0],
-        3: [0, -90],
-        4: [0, 90],
+        3: [0, 90],  
+        4: [0, -90], 
         5: [90, 0],
         6: [180, 0]
     },
@@ -16,6 +16,7 @@ window.diceHelper = {
     // Initializes audio and references
     init: function (dotNetReference) {
         this.dotNetRef = dotNetReference;
+        this.dieStates = []; 
         
         try {
             this.audioShake = new Audio('sounds/dice-shake.mp3'); 
@@ -25,7 +26,29 @@ window.diceHelper = {
         }
     },
 
-    // Animates the dice to the specific result values
+    // Instantly sets dice rotation without animation
+    resetDice: function (results) {
+        if (!Array.isArray(results)) return;
+
+        this.dieStates = []; 
+
+        results.forEach((resultValue, index) => {
+            const dieCube = document.getElementById(`die-cube-${index}`);
+            if (!dieCube) return;
+
+            const target = this.faceRotations[resultValue];
+            
+            this.dieStates.push({ x: target[0], y: target[1] });
+
+            dieCube.style.transition = 'none';
+            dieCube.style.transform = `rotateX(${target[0]}deg) rotateY(${target[1]}deg)`;
+
+            void dieCube.offsetWidth;
+            dieCube.style.transition = '';
+        });
+    },
+
+    // Animates the dice using cumulative rotation
     rollDice: function (results) {
         if (!Array.isArray(results)) return;
 
@@ -37,19 +60,33 @@ window.diceHelper = {
         let completedCount = 0;
         const totalDice = results.length;
 
+        while (this.dieStates.length < totalDice) {
+            this.dieStates.push({ x: 0, y: 0 });
+        }
+
         results.forEach((resultValue, index) => {
             const dieCube = document.getElementById(`die-cube-${index}`);
             if (!dieCube) return;
 
-            const targetRotation = this.faceRotations[resultValue];
+            const target = this.faceRotations[resultValue];
+            const current = this.dieStates[index];
+
+            const minSpins = 2;
+            const variance = Math.floor(Math.random() * 3);
+            const totalSpins = minSpins + variance;
+
+            let xOffset = target[0] - (current.x % 360);
+            if (xOffset < 0) xOffset += 360;
             
-            const xSpins = (Math.floor(Math.random() * 3) + 2) * 360;
-            const ySpins = (Math.floor(Math.random() * 3) + 2) * 360;
+            let yOffset = target[1] - (current.y % 360);
+            if (yOffset < 0) yOffset += 360;
 
-            const finalX = targetRotation[0] + xSpins;
-            const finalY = targetRotation[1] + ySpins;
+            const nextX = current.x + xOffset + (totalSpins * 360);
+            const nextY = current.y + yOffset + (totalSpins * 360);
 
-            dieCube.style.transform = `rotateX(${finalX}deg) rotateY(${finalY}deg)`;
+            this.dieStates[index] = { x: nextX, y: nextY };
+
+            dieCube.style.transform = `rotateX(${nextX}deg) rotateY(${nextY}deg)`;
 
             const onTransitionEnd = (e) => {
                 if (e.propertyName !== 'transform') return; 

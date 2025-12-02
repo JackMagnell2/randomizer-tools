@@ -59,7 +59,7 @@ namespace RandomizerTools.ViewModels
         {
             CurrentValues = new List<int>(_pendingResults);
 
-            string historyEntry = $"{string.Join(" + ", CurrentValues)} = {TotalSum}";
+            string historyEntry = $"{TotalSum}";
             History.Insert(0, historyEntry);
 
             if (History.Count > 10)

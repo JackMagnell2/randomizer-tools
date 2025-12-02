@@ -1,4 +1,4 @@
-/* Container for the dice */
+/* Container for the dice scene */
 .dice-scene {
     display: flex;
     justify-content: center;
@@ -34,18 +34,28 @@
     background: white;
     border: 1px solid #dfe6e9;
     border-radius: 16px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
+    padding: 18px; 
+    box-sizing: border-box;
+    backface-visibility: hidden;
 }
 
-/* Face specific positioning */
-.front  { transform: rotateY(0deg) translateZ(50px); }
-.back   { transform: rotateY(180deg) translateZ(50px); }
-.right  { transform: rotateY(900deg) rotateY(90deg) translateZ(50px); } 
-.left   { transform: rotateY(-90deg) translateZ(50px); }
-.top    { transform: rotateX(90deg) translateZ(50px); }
+/* Front face position */
+.front { transform: rotateY(0deg) translateZ(50px); }
+
+/* Back face position */
+.back { transform: rotateY(180deg) translateZ(50px); }
+
+/* Right face position */
+.right { transform: rotateY(90deg) translateZ(50px); } 
+
+/* Left face position */
+.left { transform: rotateY(-90deg) translateZ(50px); }
+
+/* Top face position */
+.top { transform: rotateX(90deg) translateZ(50px); }
+
+/* Bottom face position */
 .bottom { transform: rotateX(-90deg) translateZ(50px); }
 
 /* Dot pip styling */
@@ -55,56 +65,71 @@
     background-color: #2c3e50;
     border-radius: 50%;
     box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+    display: block;
 }
 
-/* Face 2 layout */
-.face.top { 
-    display: flex;
-    justify-content: space-between;
-    padding: 15px;
+/* Red dot for Face 1 */
+.face.front .dot {
+    background-color: #e74c3c;
+    width: 26px;
+    height: 26px;
 }
-.dot-top-right { align-self: flex-start; }
-.dot-bottom-left { align-self: flex-end; }
 
-/* Face 3 layout */
-.face.left { 
+/* --- Face Layouts --- */
+
+/* Face 1 */
+.face.front {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Face 2 */
+.face.top {
     display: flex;
     justify-content: space-between;
-    padding: 15px;
 }
+.face.top .dot:nth-child(1) { align-self: flex-start; }
+.face.top .dot:nth-child(2) { align-self: flex-end; }
+
+/* Face 3 */
+.face.left {
+    display: flex;
+    justify-content: space-between;
+}
+.face.left .dot:nth-child(1) { align-self: flex-start; }
 .face.left .dot:nth-child(2) { align-self: center; }
+.face.left .dot:nth-child(3) { align-self: flex-end; }
 
-/* Face 4 layout */
-.face.right { 
+/* Face 4 */
+.face.right {
     display: flex;
     justify-content: space-between;
-    padding: 15px;
 }
 .dot-col {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    height: 100%;
 }
 
-/* Face 5 layout */
-.face.bottom { 
+/* Face 5 */
+.face.bottom {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    padding: 15px; 
+}
+.face.bottom .dot:nth-child(1) { grid-column: 1; grid-row: 1; } /* Top Left */
+.face.bottom .dot:nth-child(2) { grid-column: 3; grid-row: 1; } /* Top Right */
+.face.bottom .dot:nth-child(3) { grid-column: 2; grid-row: 2; align-self: center; justify-self: center; } /* Center */
+.face.bottom .dot:nth-child(4) { grid-column: 1; grid-row: 3; align-self: end; } /* Bottom Left */
+.face.bottom .dot:nth-child(5) { grid-column: 3; grid-row: 3; align-self: end; } /* Bottom Right */
+
+/* Face 6 */
+.face.back {
     display: flex;
     justify-content: space-between;
-    padding: 15px;
-}
-
-/* Face 6 layout */
-.face.back { 
-    display: flex;
-    justify-content: space-between;
-    padding: 15px;
-}
-
-/* Face 1 red dot override */
-.face.front .dot {
-    background-color: #e74c3c;
-    width: 24px;
-    height: 24px;
 }
 
 /* Spin button styling */
@@ -123,20 +148,17 @@
     text-shadow: 0 2px 0 rgba(0,0,0,0.2);
 }
 
-/* Button hover state */
 .spin-btn:hover:not(:disabled) {
     transform: translateY(-3px);
     filter: brightness(1.1);
     box-shadow: 0 10px 0 #e67e22, 0 20px 30px rgba(255, 165, 2, 0.4);
 }
 
-/* Button active state */
 .spin-btn:active {
     transform: translateY(5px);
     box-shadow: 0 0 0 #e67e22;
 }
 
-/* Button disabled state */
 .spin-btn:disabled {
     background: #b2bec3;
     box-shadow: 0 4px 0 #636e72;
@@ -157,13 +179,11 @@
     flex-direction: column;
 }
 
-/* History list scroll area */
 .history-list {
     overflow-y: auto;
     flex: 1;
 }
 
-/* History item styling */
 .history-item {
     background: rgba(255,255,255,0.05);
     padding: 8px;

@@ -22,7 +22,7 @@
             <div class="controls-bar mb-5">
                 <label class="text-white me-3 fw-bold">Number of Dice:</label>
                 <div class="btn-group">
-                    @for (int i = 1; i <= 4; i++)
+                    @for (int i = 1; i <= 6; i++)
                     {
                         var count = i; 
                         <button class="btn @(count == _viewModel.DiceCount ? "btn-light" : "btn-outline-light")" 
@@ -40,8 +40,9 @@
                     <div class="die">
                         <div id="die-cube-@i" class="cube">
                             <div class="face front">
-                                <span class="dot dot-center"></span>
+                                <span class="dot"></span>
                             </div>
+                            
                             <div class="face back">
                                 <div class="dot-col">
                                     <span class="dot"></span>
@@ -54,6 +55,7 @@
                                     <span class="dot"></span>
                                 </div>
                             </div>
+                            
                             <div class="face right">
                                 <div class="dot-col">
                                     <span class="dot"></span>
@@ -64,25 +66,24 @@
                                     <span class="dot"></span>
                                 </div>
                             </div>
+                            
                             <div class="face left">
-                                <span class="dot dot-top-right"></span>
-                                <span class="dot dot-center"></span>
-                                <span class="dot dot-bottom-left"></span>
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                                <span class="dot"></span>
                             </div>
+                            
                             <div class="face top">
-                                <span class="dot dot-top-right"></span>
-                                <span class="dot dot-bottom-left"></span>
+                                <span class="dot"></span>
+                                <span class="dot"></span>
                             </div>
+                            
                             <div class="face bottom">
-                                <div class="dot-col">
-                                    <span class="dot"></span>
-                                    <span class="dot"></span>
-                                </div>
-                                <span class="dot dot-center"></span>
-                                <div class="dot-col">
-                                    <span class="dot"></span>
-                                    <span class="dot"></span>
-                                </div>
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                                <span class="dot"></span>
+                                <span class="dot"></span>
                             </div>
                         </div>
                     </div>
@@ -145,7 +146,7 @@
             await LoadState();
             await JSRuntime.InvokeVoidAsync("diceHelper.init", objRef);
             
-            await Task.Delay(100); 
+            await Task.Delay(50); 
             await ResetVisuals();
             
             isJsInitialized = true;
@@ -162,10 +163,10 @@
         await SaveState();
     }
 
-    // Resets visual elements
-    private Task ResetVisuals()
+    // Resets visual rotation without animation
+    private async Task ResetVisuals()
     {
-        return Task.CompletedTask;
+        await JSRuntime.InvokeVoidAsync("diceHelper.resetDice", _viewModel.CurrentValues);
     }
 
     // Trigger the roll sequence
