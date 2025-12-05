@@ -10,14 +10,44 @@
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="nav flex-column">
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+            <NavLink class="nav-link d-flex align-items-center" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill me-3" aria-hidden="true"></span> Home
             </NavLink>
         </div>
-        
+
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="wheel">
-                <span class="bi bi-circle-nav-menu" aria-hidden="true"></span> Wheel of Names
+            <NavLink class="nav-link d-flex align-items-center" href="wheel">
+                <span class="bi bi-pie-chart-fill me-3" aria-hidden="true"></span> Wheel of Names
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link d-flex align-items-center" href="coin">
+                <span class="bi bi-circle-half me-3" aria-hidden="true"></span> Coin Flip
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link d-flex align-items-center" href="dice">
+                <span class="bi bi-dice-6-fill me-3" aria-hidden="true"></span> Dice Roller
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link d-flex align-items-center" href="number">
+                <span class="bi bi-123 me-3" aria-hidden="true"></span> Number Generator
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link d-flex align-items-center" href="teams">
+                <span class="bi bi-people-fill me-3" aria-hidden="true"></span> Team Generator
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link d-flex align-items-center" href="shuffle">
+                <span class="bi bi-shuffle me-3" aria-hidden="true"></span> List Shuffler
             </NavLink>
         </div>
     </nav>
