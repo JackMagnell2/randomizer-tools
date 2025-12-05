@@ -15,7 +15,6 @@ namespace RandomizerTools.Services
 
         public RandomizerService()
         {
-            // RandomNumberGen for better randomness
             _random = new Random(RandomNumberGenerator.GetInt32(int.MaxValue));
         }
 
@@ -24,10 +23,42 @@ namespace RandomizerTools.Services
         /// </summary>
         public int GetRandomInt(int min, int max)
         {
-            if (min >= max)
-                throw new ArgumentException("Min must be less than max");
+            if (min > max) (min, max) = (max, min);
+                return _random.Next(min, max + 1);
+        }
 
-            return _random.Next(min, max);
+        /// <summary>
+        /// Generates a list of random numbers with options
+        /// </summary>
+        public List<int> GetRandomNumbers(int min, int max, int count, bool unique)
+        {
+            if (min > max) (min, max) = (max, min);
+
+            long rangeSize = (long)max - min + 1;
+            if (unique && rangeSize < count) unique = false;
+
+            var results = new List<int>();
+            var available = new HashSet<int>();
+
+            for (int i = 0; i < count; i++)
+            {
+                int num;
+                if (unique)
+                {
+                    do
+                    {
+                        num = _random.Next(min, max + 1);
+                    }
+                    while (!available.Add(num));
+                    results.Add(num);
+                }
+                else
+                {
+                    num = _random.Next(min, max + 1);
+                    results.Add(num);
+                }
+            }
+            return results;
         }
 
         /// <summary>

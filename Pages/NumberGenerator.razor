@@ -1,0 +1,205 @@
+@page "/number"
+@using RandomizerTools.ViewModels
+@using RandomizerTools.Services
+@using System.Text.Json
+@inject RandomizerService RandomizerService
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<PageTitle>Number Generator - RandomizerTools</PageTitle>
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-white mb-2" style="font-family: 'Fredoka', sans-serif;">Number Generator</h1>
+        <p class="text-white-50">Generate random numbers for lotteries, raffles, and more!</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <div class="col-lg-8">
+            
+            <div class="settings-card mb-4">
+                <div class="row g-3 align-items-end">
+                    <div class="col-6 col-md-4">
+                        <label class="form-label text-white-50 small fw-bold">MINIMUM</label>
+                        <input type="number" class="form-control modern-input text-center" @bind="_viewModel.MinValue" />
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <label class="form-label text-white-50 small fw-bold">MAXIMUM</label>
+                        <input type="number" class="form-control modern-input text-center" @bind="_viewModel.MaxValue" />
+                    </div>
+                    
+                    <div class="col-12 col-md-4">
+                        <label class="form-label text-white-50 small fw-bold">QUANTITY</label>
+                        <div class="btn-group w-100">
+                            @for(int i=1; i<=5; i++)
+                            {
+                                int c = i;
+                                <button class="btn btn-sm @(_viewModel.Count == c ? "btn-light" : "btn-outline-light")" 
+                                        @onclick="() => _viewModel.Count = c">@c</button>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3 g-3">
+                    <div class="col-6">
+                        <div class="form-check form-switch custom-switch">
+                            <input class="form-check-input" type="checkbox" id="sortSwitch" @bind="_viewModel.SortResult">
+                            <label class="form-check-label text-white" for="sortSwitch">Sort Results</label>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="form-check form-switch custom-switch">
+                            <input class="form-check-input" type="checkbox" id="dupeSwitch" @bind="_viewModel.AllowDuplicates">
+                            <label class="form-check-label text-white" for="dupeSwitch">Allow Duplicates</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-container mb-4">
+                @if (isGenerating || _viewModel.CurrentResults.Count > 0)
+                {
+                    @for (int i = 0; i < _viewModel.Count; i++)
+                    {
+                        var index = i;
+                        <div class="number-box">
+                            <span id="num-slot-@index" class="number-text">
+                                @(isGenerating ? "?" : (_viewModel.CurrentResults.Count > index ? _viewModel.CurrentResults[index] : "?"))
+                            </span>
+                        </div>
+                    }
+                }
+                else
+                {
+                     <div class="text-white-50 fst-italic">Ready to generate...</div>
+                }
+            </div>
+
+            <div class="text-center">
+                <button class="btn spin-btn" @onclick="Generate" disabled="@isGenerating">
+                    @if(isGenerating) { <span>Generating...</span> } else { <span>GENERATE</span> }
+                </button>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="history-card">
+                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom border-white-50 pb-2">
+                    <h4 class="mb-0 text-white">History</h4>
+                    @if(_viewModel.History.Count > 0)
+                    {
+                        <button class="btn btn-sm btn-link text-white-50 p-0 text-decoration-none" @onclick="ClearHistory">Clear</button>
+                    }
+                </div>
+                
+                <div class="history-list">
+                    @foreach(var item in _viewModel.History)
+                    {
+                        <div class="history-item">@item</div>
+                    }
+                    @if(_viewModel.History.Count == 0)
+                    {
+                        <div class="text-white-50 small text-center mt-3">No history yet</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private NumberGeneratorViewModel _viewModel = null!;
+    private bool isGenerating = false;
+    private DotNetObjectReference<NumberGenerator>? objRef;
+    private const string LocalStorageKey = "number_settings";
+
+    // Initialize VM
+    protected override void OnInitialized()
+    {
+        _viewModel = new NumberGeneratorViewModel(RandomizerService);
+        objRef = DotNetObjectReference.Create(this);
+    }
+
+    // Load settings and init JS
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadState();
+            await JSRuntime.InvokeVoidAsync("numberHelper.init", objRef);
+            StateHasChanged();
+        }
+    }
+
+    // Generate Action
+    private async Task Generate()
+    {
+        if (isGenerating) return;
+        isGenerating = true;
+
+        var results = _viewModel.Generate();
+
+        await JSRuntime.InvokeVoidAsync("numberHelper.rollNumbers", results, _viewModel.MinValue, _viewModel.MaxValue);
+    }
+
+    // Callback from JS when animation finishes
+    [JSInvokable]
+    public async Task OnGenerateFinished(int[] finalResults)
+    {
+        _viewModel.CommitResult(finalResults.ToList());
+        isGenerating = false;
+        await SaveState();
+        StateHasChanged();
+    }
+
+    private async Task ClearHistory()
+    {
+        _viewModel.ClearHistory();
+        await SaveState();
+    }
+
+    // Save settings to LocalStorage
+    private async Task SaveState()
+    {
+        var data = new { 
+            Min = _viewModel.MinValue, 
+            Max = _viewModel.MaxValue, 
+            Count = _viewModel.Count,
+            Dupe = _viewModel.AllowDuplicates,
+            Sort = _viewModel.SortResult,
+            History = _viewModel.History
+        };
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", LocalStorageKey, JsonSerializer.Serialize(data));
+    }
+
+    // Load settings
+    private async Task LoadState()
+    {
+        var json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", LocalStorageKey);
+        if (!string.IsNullOrEmpty(json))
+        {
+            try {
+                var data = JsonSerializer.Deserialize<SavedNumberState>(json);
+                if (data != null) 
+                    _viewModel.RestoreState(data.Min, data.Max, data.Count, data.Dupe, data.Sort, data.History);
+            } catch {}
+        }
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        objRef?.Dispose();
+        return ValueTask.CompletedTask;
+    }
+
+    private class SavedNumberState 
+    {
+        public int Min { get; set; }
+        public int Max { get; set; }
+        public int Count { get; set; }
+        public bool Dupe { get; set; }
+        public bool Sort { get; set; }
+        public List<string> History { get; set; } = new();
+    }
+}

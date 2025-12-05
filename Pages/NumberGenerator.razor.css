@@ -1,0 +1,147 @@
+/* Container for input settings */
+.settings-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+}
+
+/* Modern Input Fields */
+.modern-input {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.2rem;
+    border-radius: 12px;
+    padding: 0.5rem;
+}
+
+.modern-input:focus {
+    background: rgba(0, 0, 0, 0.5);
+    border-color: #ffeb3b;
+    box-shadow: none;
+    color: #fff;
+}
+
+/* Toggle Switch styling */
+.custom-switch .form-check-input {
+    background-color: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.3);
+    width: 3em;
+    height: 1.5em;
+    cursor: pointer;
+}
+
+.custom-switch .form-check-input:checked {
+    background-color: #6c5ce7;
+    border-color: #6c5ce7;
+}
+
+.custom-switch .form-check-label {
+    margin-left: 0.5rem;
+    padding-top: 3px;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Results Area */
+.results-container {
+    min-height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    perspective: 1000px;
+}
+
+/* Individual Result Box */
+.number-box {
+    background: linear-gradient(135deg, #fff, #f0f0f0);
+    border-radius: 20px;
+    padding: 1rem 1.5rem;
+    min-width: 100px;
+    text-align: center;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    border-bottom: 6px solid #dfe6e9;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Result Text Typography */
+.number-text {
+    font-size: 2.5rem;
+    font-weight: 800;
+    font-family: 'Fredoka', sans-serif;
+    color: #2d3436;
+    display: block;
+}
+
+/* Spin Button (Consistent with other tools) */
+.spin-btn {
+    font-size: 1.5rem;
+    font-family: 'Fredoka', sans-serif;
+    letter-spacing: 2px;
+    padding: 15px 50px;
+    border-radius: 60px;
+    background: linear-gradient(to bottom, #ffce00, #ffa502);
+    border: 4px solid #fff;
+    box-shadow: 0 8px 0 #e67e22, 0 15px 20px rgba(0,0,0,0.3);
+    transition: all 0.1s;
+    text-transform: uppercase;
+    color: #fff;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.2);
+}
+
+.spin-btn:hover:not(:disabled) {
+    transform: translateY(-3px);
+    filter: brightness(1.1);
+    box-shadow: 0 10px 0 #e67e22, 0 20px 30px rgba(255, 165, 2, 0.4);
+}
+
+.spin-btn:active {
+    transform: translateY(5px);
+    box-shadow: 0 0 0 #e67e22;
+}
+
+.spin-btn:disabled {
+    background: #b2bec3;
+    box-shadow: 0 4px 0 #636e72;
+    cursor: not-allowed;
+    transform: translateY(4px);
+    border-color: #dfe6e9;
+}
+
+/* History Card (Consistent) */
+.history-card {
+    background: rgba(0,0,0,0.3);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: left;
+    max-height: 400px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.history-list {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.history-item {
+    background: rgba(255,255,255,0.05);
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Fredoka', sans-serif;
+    text-align: center;
+    word-break: break-word;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
