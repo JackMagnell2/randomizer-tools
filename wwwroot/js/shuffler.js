@@ -5,7 +5,6 @@ window.shufflerHelper = {
     // Initialize audio
     init: function () {
         try {
-            // Reusing the same generic sounds for consistency
             this.audioShuffle = new Audio('sounds/shuffle-cards.mp3'); 
             this.audioWin = new Audio('sounds/ding.mp3');
         } catch (e) { }

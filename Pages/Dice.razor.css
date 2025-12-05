@@ -209,3 +209,15 @@
     font-family: 'Fredoka', sans-serif;
     text-align: center;
 }
+
+:root[data-theme="light"] .history-card {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-strong);
+}
+
+:root[data-theme="light"] .history-item {
+    background: rgba(0,0,0,0.04);
+    color: var(--text-primary);
+}

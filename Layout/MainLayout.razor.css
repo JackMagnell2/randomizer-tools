@@ -3,6 +3,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    min-height: 100vh;
 }
 
 /* Main content area flex growth */
@@ -12,17 +13,19 @@ main {
 
 /* Sidebar background - Deep Purple Gradient */
 .sidebar {
-    background-image: linear-gradient(180deg, #6c5ce7 0%, #2d3436 70%);
+    background-image: var(--sidebar-bg);
 }
 
 /* Top bar styling - Transparent Glass effect */
 .top-row {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: var(--toprow-bg);
+    border-bottom: 1px solid var(--toprow-border);
     justify-content: flex-end;
     height: 3.5rem;
     display: flex;
     align-items: center;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
 }
 
 /* Top bar link typography */
@@ -30,7 +33,7 @@ main {
         white-space: nowrap;
         margin-left: 1.5rem;
         text-decoration: none;
-        color: #ffeb3b;
+        color: var(--brand-yellow);
         font-weight: 700;
         font-family: 'Fredoka', sans-serif;
     }
@@ -38,8 +41,8 @@ main {
 /* Top bar link hover effects */
     .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
         text-decoration: underline;
-        color: #fff;
-        text-shadow: 0 0 10px rgba(255, 235, 59, 0.5);
+        color: var(--text-primary);
+        text-shadow: 0 0 10px rgba(255, 235, 59, 0.35);
     }
 
 /* Truncate text logic */

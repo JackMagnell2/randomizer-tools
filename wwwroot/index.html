@@ -6,6 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RandomizerTools</title>
     <base href="/" />
+    <script>
+        (function () {
+            try {
+                const storageKey = 'theme-preference';
+                const stored = localStorage.getItem(storageKey);
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const theme = stored || (prefersDark ? 'dark' : 'light');
+                document.documentElement.dataset.theme = theme;
+                document.body?.setAttribute('data-theme', theme);
+            } catch { }
+        })();
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="css/app.css" />
@@ -31,7 +43,7 @@
                 100% { opacity: 1; transform: scale(1); }
             }
             body {
-                background-color: #2c0b38;
+                background-color: var(--bg-main);
                 margin: 0;
             }
         </style>
@@ -43,6 +55,7 @@
         <span class="dismiss">🗙</span>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
+    <script src="js/theme.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="js/wheel.js"></script>
     <script src="js/coin.js"></script>

@@ -16,9 +16,9 @@ canvas#wheelCanvas {
 
 /* Sidebar card container */
 .entries-card {
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-soft);
     border-radius: 20px;
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--surface-strong);
     backdrop-filter: blur(10px);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     overflow: hidden;
@@ -27,7 +27,7 @@ canvas#wheelCanvas {
 /* Card header section */
 .card-header {
     background: rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-soft);
     padding-top: 1.5rem !important;
 }
 
@@ -47,7 +47,7 @@ canvas#wheelCanvas {
     background: rgba(0, 0, 0, 0.4);
     border-radius: 12px;
     padding: 4px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-soft);
     display: flex;
     transition: all 0.2s;
 }
@@ -65,7 +65,7 @@ canvas#wheelCanvas {
     background: transparent;
     padding-left: 1rem;
     font-size: 1.1rem;
-    color: #fff;
+    color: var(--text-primary);
     font-family: 'Quicksand', sans-serif;
 }
 
@@ -144,9 +144,9 @@ canvas#wheelCanvas {
     margin-bottom: 0.5rem;
     padding: 0.6rem 1rem;
     border-radius: 10px;
-    border-left: 4px solid #ffeb3b;
+    border-left: 4px solid var(--brand-yellow);
     transition: all 0.2s;
-    color: #fff;
+    color: var(--text-primary);
 }
 
 /* List item hover state */
@@ -181,8 +181,8 @@ canvas#wheelCanvas {
 .weight-input {
     width: 65px;
     background: rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.1);
-    color: #fff;
+    border: 1px solid var(--border-soft);
+    color: var(--text-primary);
     border-radius: 6px;
     padding: 0.3rem;
     text-align: center;
@@ -338,4 +338,68 @@ canvas#wheelCanvas {
 @keyframes popIn {
     0% { opacity: 0; transform: scale(0.8) translateY(20px); }
     100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@media (max-width: 991.98px) {
+    .entries-list {
+        max-height: 40vh !important;
+    }
+
+    .wheel-wrapper {
+        max-width: min(520px, 100%);
+    }
+}
+
+@media (min-width: 1200px) {
+    .wheel-wrapper {
+        max-width: 680px;
+    }
+}
+
+:root[data-theme="light"] .entries-card {
+    background: var(--surface);
+    border-color: var(--border-soft);
+    box-shadow: var(--shadow-strong);
+}
+
+:root[data-theme="light"] .card-header {
+    background: rgba(255,255,255,0.9);
+    color: var(--text-primary);
+}
+
+:root[data-theme="light"] .card-header h3 {
+    color: var(--text-primary);
+    text-shadow: none;
+}
+
+:root[data-theme="light"] .card-header small {
+    color: var(--text-muted);
+}
+
+:root[data-theme="light"] .modern-input-group {
+    background: #ffffff;
+    border-color: var(--border-soft);
+}
+
+:root[data-theme="light"] .modern-input::placeholder {
+    color: rgba(0,0,0,0.4);
+}
+
+:root[data-theme="light"] .entry-item {
+    background: #ffffff;
+    border-color: var(--brand-yellow);
+    box-shadow: var(--shadow-strong);
+}
+
+:root[data-theme="light"] .entry-text {
+    text-shadow: none;
+}
+
+:root[data-theme="light"] .percentage-label {
+    color: var(--text-muted);
+}
+
+:root[data-theme="light"] .weight-input {
+    background: #f6f7fb;
+    color: var(--text-primary);
 }
