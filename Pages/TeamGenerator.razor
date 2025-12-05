@@ -1,0 +1,227 @@
+@page "/teams"
+@using RandomizerTools.ViewModels
+@using RandomizerTools.Services
+@using System.Text.Json
+@inject RandomizerService RandomizerService
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<PageTitle>Team Generator - RandomizerTools</PageTitle>
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-white mb-2" style="font-family: 'Fredoka', sans-serif;">Team Generator</h1>
+        <p class="text-white-50">Split lists into balanced random teams!</p>
+    </div>
+
+    <div class="row g-4">
+        
+        <div class="col-lg-4">
+            <div class="card entries-card h-100">
+                <div class="card-header border-bottom-0 pt-4 pb-0">
+                    <h3 class="fw-bold mb-0 text-white">Participants</h3>
+                    <small class="text-white-50">@_viewModel.Names.Count items</small>
+                </div>
+                <div class="card-body d-flex flex-column">
+                    
+                    <div class="input-group modern-input-group mb-3">
+                        <input type="text" class="form-control modern-input" 
+                               placeholder="Add names..." 
+                               @bind="currentInput" 
+                               @onkeyup="HandleKeyUp" />
+                        <button class="btn btn-add" @onclick="AddEntry">ADD</button>
+                    </div>
+                    
+                    <div class="entries-list flex-grow-1 overflow-auto pe-2" style="max-height: 50vh;">
+                        @if (_viewModel.Names.Count == 0)
+                        {
+                            <div class="text-center text-white-50 mt-5">
+                                <span class="fs-1">👥</span>
+                                <p class="mt-2 small">Add names to begin.<br>Tip: Separate with commas!</p>
+                            </div>
+                        }
+                        else
+                        {
+                            @foreach (var name in _viewModel.Names.ToList()) 
+                            {
+                                <div class="entry-item">
+                                    <span class="entry-text text-truncate">@name</span>
+                                    <button class="btn btn-link btn-remove-entry p-0 text-decoration-none" @onclick="() => RemoveEntry(name)">✕</button>
+                                </div>
+                            }
+                        }
+                    </div>
+                    
+                    @if (_viewModel.Names.Count > 0)
+                    {
+                        <div class="mt-3">
+                            <button class="btn btn-outline-light btn-sm w-100" @onclick="ClearAll">Clear List</button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            
+            <div class="settings-card mb-4 text-center">
+                <label class="form-label text-white fw-bold mb-3">HOW MANY TEAMS?</label>
+                
+                <div class="d-flex align-items-center justify-content-center gap-3 mb-4">
+                    <button class="btn btn-outline-light rounded-circle" @onclick="() => AdjustCount(-1)" disabled="@(_viewModel.TeamCount <= 2)">-</button>
+                    <span class="display-4 fw-bold text-warning" style="font-family: 'Fredoka', sans-serif; min-width: 60px;">@_viewModel.TeamCount</span>
+                    <button class="btn btn-outline-light rounded-circle" @onclick="() => AdjustCount(1)" disabled="@(_viewModel.TeamCount >= _viewModel.Names.Count)">+</button>
+                </div>
+
+                <button class="btn spin-btn" @onclick="Generate" disabled="@isGenerating">
+                    @if(isGenerating) { <span>Shuffling...</span> } else { <span>GENERATE TEAMS</span> }
+                </button>
+            </div>
+
+            <div class="row g-3" id="teams-container">
+                @if (_viewModel.GeneratedTeams.Count > 0 && !isGenerating)
+                {
+                    @for (int i = 0; i < _viewModel.GeneratedTeams.Count; i++)
+                    {
+                        var teamIndex = i;
+                        var teamMembers = _viewModel.GeneratedTeams[i];
+                        
+                        <div class="col-md-6 col-xl-4">
+                            <div class="team-card fade-in-up" style="animation-delay: @(i * 0.1)s">
+                                <div class="team-header">
+                                    <span class="team-icon">🏆</span> Team @(teamIndex + 1)
+                                </div>
+                                <div class="team-body">
+                                    @foreach (var member in teamMembers)
+                                    {
+                                        <div class="team-member">@member</div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else if (!isGenerating)
+                {
+                    <div class="text-center text-white-50 mt-5">
+                        <i>Ready to generate...</i>
+                    </div>
+                }
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@code {
+    private TeamGeneratorViewModel _viewModel = null!;
+    private string currentInput = "";
+    private bool isGenerating = false;
+    private DotNetObjectReference<TeamGenerator>? objRef;
+    private const string LocalStorageKey = "teams_state";
+
+    // Initialize View Model
+    protected override void OnInitialized()
+    {
+        _viewModel = new TeamGeneratorViewModel(RandomizerService);
+        objRef = DotNetObjectReference.Create(this);
+    }
+
+    // Load state and JS
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadState();
+            await JSRuntime.InvokeVoidAsync("teamHelper.init", objRef);
+            StateHasChanged();
+        }
+    }
+
+    // Adds a new entry to the list
+    private void AddEntry()
+    {
+        if (!string.IsNullOrWhiteSpace(currentInput))
+        {
+            _viewModel.AddName(currentInput);
+            currentInput = "";
+            SaveState();
+        }
+    }
+
+    // Removes a specific entry
+    private void RemoveEntry(string name)
+    {
+        _viewModel.RemoveName(name);
+        SaveState();
+    }
+
+    // Clears all names
+    private void ClearAll()
+    {
+        _viewModel.ClearNames();
+        SaveState();
+    }
+
+    // Handles keyboard input
+    private void HandleKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") AddEntry();
+    }
+
+    // Adjusts team count safely
+    private void AdjustCount(int delta)
+    {
+        int newCount = _viewModel.TeamCount + delta;
+        if (newCount >= 2 && newCount <= Math.Max(2, _viewModel.Names.Count))
+        {
+            _viewModel.TeamCount = newCount;
+        }
+    }
+
+    // Trigger generation sequence
+    private async Task Generate()
+    {
+        if (isGenerating || _viewModel.Names.Count < 2) return;
+        
+        isGenerating = true;
+        await JSRuntime.InvokeVoidAsync("teamHelper.animateGenerate");
+        
+        await Task.Delay(800);
+
+        _viewModel.GenerateTeams();
+        
+        isGenerating = false;
+        SaveState();
+    }
+
+    // Persist state to local storage
+    private async void SaveState()
+    {
+        var data = new { Names = _viewModel.Names, Count = _viewModel.TeamCount };
+        await JSRuntime.InvokeVoidAsync("localStorage.setItem", LocalStorageKey, JsonSerializer.Serialize(data));
+    }
+
+    // Restore state from local storage
+    private async Task LoadState()
+    {
+        var json = await JSRuntime.InvokeAsync<string>("localStorage.getItem", LocalStorageKey);
+        if (!string.IsNullOrEmpty(json))
+        {
+            try {
+                var data = JsonSerializer.Deserialize<SavedTeamState>(json);
+                if (data != null) _viewModel.RestoreState(data.Names, data.Count);
+            } catch {}
+        }
+    }
+
+    // Dispose object reference
+    public ValueTask DisposeAsync()
+    {
+        objRef?.Dispose();
+        return ValueTask.CompletedTask;
+    }
+
+    // DTO for persistence
+    class SavedTeamState { public List<string> Names { get; set; } = new(); public int Count { get; set; } }
+}
