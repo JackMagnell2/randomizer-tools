@@ -168,15 +168,12 @@
         
         isShuffling = true;
         
-        // Trigger sound
         try { await JSRuntime.InvokeVoidAsync("shufflerHelper.playShuffle"); } catch { }
         
-        // Artificial delay for effect
         await Task.Delay(600);
 
         _viewModel.Shuffle();
         
-        // Trigger finish sound
         try { await JSRuntime.InvokeVoidAsync("shufflerHelper.playWin"); } catch { }
 
         isShuffling = false;

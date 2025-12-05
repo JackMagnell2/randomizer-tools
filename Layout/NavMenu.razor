@@ -1,9 +1,23 @@
-﻿<div class="top-row ps-1 navbar navbar-dark">
+﻿@inject IJSRuntime JSRuntime
+
+<div class="top-row ps-1 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">RandomizerTools</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm theme-toggle" @onclick="ToggleThemeMode">
+                @if (currentTheme == "light")
+                {
+                    <span>Light</span>
+                }
+                else
+                {
+                    <span>Dark</span>
+                }
+            </button>
+            <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
     </div>
 </div>
 
@@ -55,11 +69,41 @@
 
 @code {
     private bool collapseNavMenu = true;
+    private string currentTheme = "dark";
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                currentTheme = await JSRuntime.InvokeAsync<string>("themeHelper.init");
+            }
+            catch
+            {
+                currentTheme = "dark";
+            }
+            StateHasChanged();
+        }
+    }
+
+    private async Task ToggleThemeMode()
+    {
+        try
+        {
+            currentTheme = await JSRuntime.InvokeAsync<string>("themeHelper.toggle");
+        }
+        catch
+        {
+            currentTheme = currentTheme == "light" ? "dark" : "light";
+        }
+        StateHasChanged();
     }
 }

@@ -27,11 +27,11 @@
 .modern-input {
     border: none;
     background: transparent;
-    color: #fff;
+    color: var(--text-primary);
 }
 
 /* Input focus state override */
-.modern-input:focus { background: transparent; color: #fff; box-shadow: none; }
+.modern-input:focus { background: transparent; color: var(--text-primary); box-shadow: none; }
 
 /* Add button styling */
 .btn-add {
@@ -52,7 +52,7 @@
     padding: 0.6rem 1rem;
     border-radius: 10px;
     border-left: 4px solid #ffeb3b;
-    color: #fff;
+    color: var(--text-primary);
 }
 
 /* Remove button text style */
@@ -71,10 +71,8 @@
     box-shadow: 0 5px 0 #e67e22;
 }
 
-/* Action button active state */
 .spin-btn:active { transform: translateY(3px); box-shadow: none; }
 
-/* Action button disabled state */
 .spin-btn:disabled { background: #b2bec3; border-color: #dfe6e9; box-shadow: none; }
 
 /* Casino themed team card container */
@@ -120,7 +118,7 @@
     margin-bottom: 4px;
     background: rgba(255,255,255,0.05);
     border-radius: 6px;
-    color: #ecf0f1;
+    color: var(--text-primary);
     font-weight: 500;
     text-align: center;
     border: 1px solid rgba(255,255,255,0.05);
@@ -136,4 +134,37 @@
 /* Animation keyframes */
 @keyframes fadeInUp {
     to { opacity: 1; transform: translateY(0); }
+}
+
+:root[data-theme="light"] .entries-card {
+    background: var(--surface);
+    border-color: var(--border-soft);
+    box-shadow: var(--shadow-strong);
+}
+
+:root[data-theme="light"] .settings-card {
+    background: var(--surface);
+    border-color: var(--border-soft);
+    box-shadow: var(--shadow-strong);
+}
+
+:root[data-theme="light"] .entry-item {
+    background: #ffffff;
+    color: var(--text-primary);
+}
+
+:root[data-theme="light"] .team-card {
+    background: #ffffff;
+    border-color: var(--border-soft);
+    box-shadow: var(--shadow-strong);
+}
+
+:root[data-theme="light"] .team-body {
+    background: #ffffff;
+}
+
+:root[data-theme="light"] .team-member {
+    background: rgba(0,0,0,0.04);
+    border-color: rgba(0,0,0,0.08);
+    color: var(--text-primary);
 }

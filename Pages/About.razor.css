@@ -21,7 +21,7 @@
 .custom-input {
     background-color: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #fff;
+    color: var(--text-primary);
     border-radius: 8px;
     padding: 10px 15px;
 }
@@ -30,7 +30,7 @@
     background-color: rgba(0, 0, 0, 0.5);
     border-color: #ffeb3b;
     box-shadow: 0 0 0 0.25rem rgba(255, 235, 59, 0.25);
-    color: #fff;
+    color: var(--text-primary);
 }
 
 .custom-input::placeholder {
@@ -67,4 +67,29 @@
     color: #ff6b6b;
     font-size: 0.85rem;
     margin-top: 0.25rem;
+}
+
+:root[data-theme="light"] .glass-panel {
+    background: var(--surface);
+    border-color: var(--border-soft);
+    box-shadow: var(--shadow-strong);
+}
+
+:root[data-theme="light"] .text-yellow {
+    color: var(--brand-yellow);
+    text-shadow: none;
+}
+
+:root[data-theme="light"] .text-light-purple {
+    color: var(--text-muted);
+}
+
+:root[data-theme="light"] .custom-input {
+    background-color: #f5f6fb;
+    border-color: var(--border-soft);
+    color: var(--text-primary);
+}
+
+:root[data-theme="light"] .custom-input::placeholder {
+    color: rgba(0,0,0,0.4);
 }

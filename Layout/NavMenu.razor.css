@@ -1,20 +1,20 @@
 /* Mobile toggle button styling */
 .navbar-toggler {
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255,255,255,0.2);
+    background-color: var(--surface);
+    border: 1px solid var(--border-soft);
 }
 
 /* Navbar header area styling */
 .top-row {
     min-height: 3.5rem;
-    background-color: rgba(0,0,0,0.2);
+    background-color: transparent;
 }
 
 /* Navbar Brand text - Arcade Style */
 .navbar-brand {
     font-size: 1.4rem;
     font-family: 'Fredoka', sans-serif;
-    color: #ffeb3b !important;
+    color: var(--brand-yellow) !important;
     text-transform: uppercase;
     letter-spacing: 1px;
     text-shadow: 0 2px 0 rgba(0,0,0,0.3);
@@ -86,7 +86,7 @@
 
 /* Nav link styling */
     .nav-item ::deep a {
-        color: #dcdde1;
+        color: var(--text-muted);
         border-radius: 8px;
         height: 3rem;
         display: flex;
@@ -97,17 +97,48 @@
 
 /* Active link state - Glowing Effect */
 .nav-item ::deep a.active {
-    background-color: rgba(108, 92, 231, 0.4);
-    color: #fff;
-    border-left: 4px solid #ffeb3b;
-    box-shadow: 0 0 15px rgba(108, 92, 231, 0.3);
+    background-color: rgba(108, 92, 231, 0.25);
+    color: var(--text-primary);
+    border-left: 4px solid var(--brand-yellow);
+    box-shadow: 0 0 15px rgba(108, 92, 231, 0.25);
 }
 
 /* Link hover effect */
 .nav-item ::deep a:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: #ffeb3b;
+    background-color: var(--surface);
+    color: var(--brand-yellow);
     transform: translateX(5px);
+}
+
+.theme-toggle {
+    border-color: var(--border-soft);
+    color: var(--text-primary);
+    background: var(--surface);
+    padding: 0.35rem 0.75rem;
+    line-height: 1.2;
+    box-shadow: none;
+}
+
+.theme-toggle:hover {
+    border-color: var(--accent);
+    color: var(--text-primary);
+}
+
+:root[data-theme="light"] .navbar-toggler-icon {
+    filter: invert(1);
+}
+
+:root[data-theme="light"] .navbar-toggler {
+    background-color: #ffffff;
+}
+
+:root[data-theme="light"] .navbar-brand {
+    text-shadow: none;
+}
+
+:root[data-theme="light"] .nav-item ::deep a.active {
+    background-color: rgba(85, 68, 200, 0.1);
+    box-shadow: none;
 }
 
 /* Desktop responsive layout */
