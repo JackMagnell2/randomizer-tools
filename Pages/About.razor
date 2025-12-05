@@ -1,0 +1,142 @@
+@page "/about"
+@using System.ComponentModel.DataAnnotations
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<PageTitle>About - RandomizerTools</PageTitle>
+
+<div class="container mt-4 animate-fade-in">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold text-yellow mb-3">About RandomizerTools</h1>
+                <p class="lead text-light-purple">
+                    Built for speed and simplicity. Whether you need to settle a debate, pick a winner, or shuffle a team, 
+                    these tools run directly in your browser with no delay.
+                </p>
+            </div>
+
+            <div class="card glass-panel text-white">
+                <div class="card-header border-0 bg-transparent pt-4 px-4">
+                    <h3 class="fw-bold mb-0 d-flex align-items-center">
+                        <span class="bi bi-envelope-fill me-3 text-yellow"></span>Contact Me
+                    </h3>
+                    <small class="text-white-50">Found a bug or have a feature request? Let me know below.</small>
+                </div>
+                
+                <div class="card-body p-4">
+                    @if (isSubmitted)
+                    {
+                        <div class="alert alert-success d-flex align-items-center" role="alert">
+                            <span class="bi bi-check-circle-fill me-3 fs-4"></span>
+                            <div>
+                                <strong>Message Sent!</strong> Thanks for reaching out. I'll get back to you soon.
+                            </div>
+                        </div>
+                        <button class="btn btn-outline-light btn-sm mt-2" @onclick="ResetForm">Send another message</button>
+                    }
+                    else if (isError)
+                    {
+                        <div class="alert alert-danger d-flex align-items-center" role="alert">
+                            <span class="bi bi-exclamation-triangle-fill me-3 fs-4"></span>
+                            <div>
+                                <strong>Something went wrong.</strong> Please check your connection and try again.
+                            </div>
+                        </div>
+                        <button class="btn btn-outline-light btn-sm mt-2" @onclick="(() => isError = false)">Try again</button>
+                    }
+                    else
+                    {
+                        <EditForm Model="@contactModel" OnValidSubmit="HandleValidSubmit">
+                            <DataAnnotationsValidator />
+                            
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Name</label>
+                                <InputText id="name" class="form-control custom-input" @bind-Value="contactModel.Name" placeholder="Your Name" />
+                                <ValidationMessage For="@(() => contactModel.Name)" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <InputText id="email" class="form-control custom-input" @bind-Value="contactModel.Email" placeholder="name@example.com" />
+                                <ValidationMessage For="@(() => contactModel.Email)" />
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="message" class="form-label">Message</label>
+                                <InputTextArea id="message" class="form-control custom-input" rows="5" @bind-Value="contactModel.Message" placeholder="How can we improve the tools?" />
+                                <ValidationMessage For="@(() => contactModel.Message)" />
+                            </div>
+
+                            <button type="submit" class="btn btn-yellow w-100 fw-bold py-2 text-uppercase">
+                                Send Message
+                            </button>
+                        </EditForm>
+                    }
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@code {
+    private ContactFormModel contactModel = new();
+    private bool isSubmitted = false;
+    private bool isError = false;
+
+    // My specific Formspree endpoint
+    private const string FormspreeEndpoint = "https://formspree.io/f/xldqllzp"; 
+
+    private async Task HandleValidSubmit()
+    {
+        try 
+        {
+            var payload = new 
+            {
+                email = contactModel.Email,
+                name = contactModel.Name,
+                message = contactModel.Message
+            };
+
+            var response = await Http.PostAsJsonAsync(FormspreeEndpoint, payload);
+
+            if (response.IsSuccessStatusCode)
+            {
+                isSubmitted = true;
+                isError = false;
+            }
+            else
+            {
+                isError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            isError = true;
+            Console.WriteLine($"Error sending email: {ex.Message}");
+        }
+    }
+
+    private void ResetForm()
+    {
+        contactModel = new();
+        isSubmitted = false;
+        isError = false;
+    }
+
+    public class ContactFormModel
+    {
+        [Required(ErrorMessage = "Please tell us your name.")]
+        public string? Name { get; set; }
+
+        [Required(ErrorMessage = "We need your email to reply.")]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
+        public string? Email { get; set; }
+
+        [Required(ErrorMessage = "Don't forget to write a message!")]
+        [MinLength(10, ErrorMessage = "Message must be at least 10 characters.")]
+        public string? Message { get; set; }
+    }
+}
