@@ -198,7 +198,7 @@
     // Persist state to local storage
     private async void SaveState()
     {
-        var data = new { Names = _viewModel.Names, Count = _viewModel.TeamCount };
+        var data = new { Names = _viewModel.Names, Count = _viewModel.TeamCount, Teams = _viewModel.GeneratedTeams };
         await JSRuntime.InvokeVoidAsync("localStorage.setItem", LocalStorageKey, JsonSerializer.Serialize(data));
     }
 
@@ -210,7 +210,7 @@
         {
             try {
                 var data = JsonSerializer.Deserialize<SavedTeamState>(json);
-                if (data != null) _viewModel.RestoreState(data.Names, data.Count);
+                if (data != null) _viewModel.RestoreState(data.Names, data.Count, data.Teams);
             } catch {}
         }
     }
@@ -223,5 +223,5 @@
     }
 
     // DTO for persistence
-    class SavedTeamState { public List<string> Names { get; set; } = new(); public int Count { get; set; } }
+    class SavedTeamState { public List<string> Names { get; set; } = new(); public int Count { get; set; } public List<List<string>>? Teams { get; set; } }
 }

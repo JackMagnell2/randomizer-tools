@@ -5,8 +5,8 @@ window.teamHelper = {
     // Initialize audio resources
     init: function () {
         try {
-            this.audioShuffle = new Audio('sounds/dice-shake.mp3'); 
-            this.audioWin = new Audio('sounds/coin-drop.mp3');
+            this.audioShuffle = new Audio('sounds/shuffle-cards.mp3'); 
+            this.audioWin = new Audio('sounds/ding.mp3');
         } catch (e) { }
     },
 
@@ -22,6 +22,6 @@ window.teamHelper = {
                 this.audioWin.currentTime = 0;
                 this.audioWin.play().catch(() => {});
             }
-        }, 700);
+        }, 900);
     }
 };

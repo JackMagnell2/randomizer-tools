@@ -1,4 +1,4 @@
-/* Sidebar container style */
+/* Sidebar container styling */
 .entries-card {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -6,7 +6,7 @@
     backdrop-filter: blur(10px);
 }
 
-/* Settings container style */
+/* Settings panel container */
 .settings-card {
     background: rgba(0, 0, 0, 0.3);
     border-radius: 20px;
@@ -14,7 +14,7 @@
     border: 1px solid rgba(255,255,255,0.1);
 }
 
-/* Input group container */
+/* Input group flex container */
 .modern-input-group {
     background: rgba(0, 0, 0, 0.4);
     border-radius: 12px;
@@ -23,19 +23,15 @@
     display: flex;
 }
 
-/* Input field styling */
+/* Transparent input field styling */
 .modern-input {
     border: none;
     background: transparent;
     color: #fff;
 }
 
-/* Input focus override */
-.modern-input:focus {
-    background: transparent;
-    color: #fff;
-    box-shadow: none;
-}
+/* Input focus state override */
+.modern-input:focus { background: transparent; color: #fff; box-shadow: none; }
 
 /* Add button styling */
 .btn-add {
@@ -47,7 +43,7 @@
     padding: 0 1.5rem;
 }
 
-/* Entry item styling */
+/* List entry item layout */
 .entry-item {
     display: flex;
     justify-content: space-between;
@@ -59,13 +55,10 @@
     color: #fff;
 }
 
-/* Remove button styling */
-.btn-remove-entry {
-    color: #ff7675;
-    font-weight: bold;
-}
+/* Remove button text style */
+.btn-remove-entry { color: #ff7675; font-weight: bold; }
 
-/* Main action button */
+/* Main action button styling */
 .spin-btn {
     font-size: 1.2rem;
     font-family: 'Fredoka', sans-serif;
@@ -79,24 +72,18 @@
 }
 
 /* Action button active state */
-.spin-btn:active {
-    transform: translateY(3px);
-    box-shadow: none;
-}
+.spin-btn:active { transform: translateY(3px); box-shadow: none; }
 
 /* Action button disabled state */
-.spin-btn:disabled {
-    background: #b2bec3;
-    border-color: #dfe6e9;
-    box-shadow: none;
-}
+.spin-btn:disabled { background: #b2bec3; border-color: #dfe6e9; box-shadow: none; }
 
-/* Team card container */
+/* Casino themed team card container */
 .team-card {
-    background: white;
+    background: #2d3436;
+    border: 2px solid #f1c40f;
     border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
     height: 100%;
     transition: transform 0.2s;
 }
@@ -104,46 +91,49 @@
 /* Team card hover effect */
 .team-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(241, 196, 15, 0.2);
 }
 
-/* Team card header */
+/* Team card header with gradient */
 .team-header {
-    background: #6c5ce7;
-    color: white;
-    padding: 1rem;
+    background: linear-gradient(180deg, #f1c40f 0%, #d35400 100%);
+    padding: 0.8rem;
+    text-align: center;
+    border-bottom: 2px solid #b7950b;
+    
+    color: #fff;
     font-family: 'Fredoka', sans-serif;
     font-size: 1.2rem;
-    text-align: center;
     font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 
-/* Team card body */
+/* Team card content area */
 .team-body {
     padding: 1rem;
-    background: #fdfdfd;
+    background: #2d3436;
 }
 
-/* Team member item */
+/* Individual team member item */
 .team-member {
-    padding: 0.5rem;
-    border-bottom: 1px solid #eee;
-    color: #2d3436;
+    padding: 0.6rem;
+    margin-bottom: 4px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 6px;
+    color: #ecf0f1;
     font-weight: 500;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.05);
 }
 
-/* Last member border override */
-.team-member:last-child {
-    border-bottom: none;
-}
-
-/* Animation class */
+/* Entry animation class */
 .fade-in-up {
     animation: fadeInUp 0.5s ease-out forwards;
     opacity: 0;
     transform: translateY(20px);
 }
 
-/* Keyframes for appearance */
+/* Animation keyframes */
 @keyframes fadeInUp {
     to { opacity: 1; transform: translateY(0); }
 }

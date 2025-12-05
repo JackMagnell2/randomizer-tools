@@ -79,10 +79,11 @@ namespace RandomizerTools.ViewModels
         /// <summary>
         /// Restores state
         /// </summary>
-        public void RestoreState(List<string> names, int teamCount)
+        public void RestoreState(List<string> names, int teamCount, List<List<string>>? teams)
         {
             Names = names ?? new List<string>();
             TeamCount = teamCount < 2 ? 2 : teamCount;
+            GeneratedTeams = teams ?? new List<List<string>>();
         }
     }
 }
