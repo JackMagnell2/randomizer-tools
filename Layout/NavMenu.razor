@@ -79,11 +79,13 @@
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
+    // Toggles nav expansion
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
     }
 
+    // Initialize persisted or system theme
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -100,6 +102,7 @@
         }
     }
 
+    // Switches between light/dark theme
     private async Task ToggleThemeMode()
     {
         try
