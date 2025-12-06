@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using RandomizerTools.Services;
 
 namespace RandomizerTools.ViewModels
@@ -32,26 +33,49 @@ namespace RandomizerTools.ViewModels
         public void Generate()
         {
             CurrentPassword = _randomizerService.GeneratePassword(16, UseUpper, UseLower, UseDigits, UseSymbols);
-            CalculateStrength();
+            CalculateStrength(CurrentPassword);
+        }
+
+        /// <summary>
+        /// Updates password from user input and recalculates strength
+        /// </summary>
+        public void UpdatePassword(string value)
+        {
+            CurrentPassword = value ?? string.Empty;
+            CalculateStrength(CurrentPassword);
+        }
+
+        /// <summary>
+        /// Recalculate strength after option changes
+        /// </summary>
+        public void RefreshStrengthFromOptions()
+        {
+            CalculateStrength(CurrentPassword);
         }
 
         /// <summary>
         /// Calculates password strength
         /// </summary>
-        private void CalculateStrength()
+        private void CalculateStrength(string password)
         {
+            if (password == null) password = string.Empty;
+
+            bool hasUpper = password.Any(char.IsUpper);
+            bool hasLower = password.Any(char.IsLower);
+            bool hasDigit = password.Any(char.IsDigit);
+            bool hasSymbol = password.Any(c => !char.IsLetterOrDigit(c));
+
             int pools = 0;
-            if (UseUpper) pools++;
-            if (UseLower) pools++;
-            if (UseDigits) pools++;
-            if (UseSymbols) pools++;
+            if (hasUpper) pools++;
+            if (hasLower) pools++;
+            if (hasDigit) pools++;
+            if (hasSymbol) pools++;
 
-            int score = 0;
-            score += pools * 20;
-            score += 20; // fixed length 16 baseline
-            if (pools == 4) score += 20;
+            int lengthScore = Math.Min(password.Length, 20) * 3;
+            int poolScore = pools * 12;
+            int bonus = (pools == 4 ? 12 : 0) + (password.Length >= 16 ? 12 : 0);
 
-            StrengthScore = Math.Min(score, 100);
+            StrengthScore = Math.Min(lengthScore + poolScore + bonus, 100);
 
             if (StrengthScore >= 80)
                 StrengthLabel = "Strong";
