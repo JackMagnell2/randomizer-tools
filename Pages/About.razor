@@ -89,6 +89,7 @@
     // My specific Formspree endpoint
     private const string FormspreeEndpoint = "https://formspree.io/f/xldqllzp"; 
 
+    // Handles valid form submit
     private async Task HandleValidSubmit()
     {
         try 
@@ -119,6 +120,7 @@
         }
     }
 
+    // Resets the form state
     private void ResetForm()
     {
         contactModel = new();

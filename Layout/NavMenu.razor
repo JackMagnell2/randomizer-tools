@@ -64,6 +64,12 @@
                 <span class="bi bi-shuffle me-3" aria-hidden="true"></span> List Shuffler
             </NavLink>
         </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link d-flex align-items-center" href="password">
+                <span class="bi bi-key-fill me-3" aria-hidden="true"></span> Password Generator
+            </NavLink>
+        </div>
     </nav>
 </div>
 
@@ -73,11 +79,13 @@
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
+    // Toggles nav expansion
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
     }
 
+    // Initialize persisted or system theme
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -94,6 +102,7 @@
         }
     }
 
+    // Switches between light/dark theme
     private async Task ToggleThemeMode()
     {
         try

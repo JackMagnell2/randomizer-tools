@@ -126,19 +126,63 @@ namespace RandomizerTools.Services
             var shuffled = ShuffleList(items);
             var teams = new List<List<T>>();
 
-            // Create empty teams first
             for (int i = 0; i < teamCount; i++)
             {
                 teams.Add(new List<T>());
             }
 
-            // Distribute shuffled items across teams
             for (int i = 0; i < shuffled.Count; i++)
             {
                 teams[i % teamCount].Add(shuffled[i]);
             }
 
             return teams;
+        }
+
+        /// <summary>
+        /// Generate a cryptographically strong password
+        /// </summary>
+        public string GeneratePassword(int length, bool useUpper, bool useLower, bool useDigits, bool useSymbols)
+        {
+            if (length < 4) length = 4;
+
+            var upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            var lower = "abcdefghijklmnopqrstuvwxyz";
+            var digits = "0123456789";
+            var symbols = "!@$%^&*?-_=+.#";
+
+            var pools = new List<string>();
+            if (useUpper) pools.Add(upper);
+            if (useLower) pools.Add(lower);
+            if (useDigits) pools.Add(digits);
+            if (useSymbols) pools.Add(symbols);
+
+            if (pools.Count == 0) pools.Add(lower);
+
+            var chars = new List<char>();
+
+            foreach (var pool in pools)
+            {
+                chars.Add(GetRandomChar(pool));
+            }
+
+            var all = string.Concat(pools);
+            while (chars.Count < length)
+            {
+                chars.Add(GetRandomChar(all));
+            }
+
+            ShuffleList(chars);
+            return new string(chars.ToArray());
+        }
+
+        /// <summary>
+        /// Gets a random char
+        /// </summary>
+        private char GetRandomChar(string pool)
+        {
+            var index = RandomNumberGenerator.GetInt32(pool.Length);
+            return pool[index];
         }
     }
 }
