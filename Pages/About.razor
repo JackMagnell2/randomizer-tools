@@ -3,14 +3,14 @@
 @using System.Net.Http.Json
 @inject HttpClient Http
 
-<PageTitle>About - RandomizerTools</PageTitle>
+<PageTitle>About - RandomizerKit</PageTitle>
 
 <div class="container mt-4 animate-fade-in">
     <div class="row justify-content-center">
         <div class="col-md-8">
             
             <div class="text-center mb-5">
-                <h1 class="display-4 fw-bold text-yellow mb-3">About RandomizerTools</h1>
+                <h1 class="display-4 fw-bold text-yellow mb-3">About RandomizerKit</h1>
                 <p class="lead text-light-purple">
                     Built for speed and simplicity. Whether you need to settle a debate, pick a winner, or shuffle a team, 
                     these tools run directly in your browser with no delay.
@@ -65,7 +65,7 @@
 
                             <div class="mb-4">
                                 <label for="message" class="form-label">Message</label>
-                                <InputTextArea id="message" class="form-control custom-input" rows="5" @bind-Value="contactModel.Message" placeholder="How can we improve the tools?" />
+                                <InputTextArea id="message" class="form-control custom-input" rows="5" @bind-Value="contactModel.Message" placeholder="How can I improve the tools?" />
                                 <ValidationMessage For="@(() => contactModel.Message)" />
                             </div>
 
@@ -130,10 +130,10 @@
 
     public class ContactFormModel
     {
-        [Required(ErrorMessage = "Please tell us your name.")]
+        [Required(ErrorMessage = "Please tell me your name.")]
         public string? Name { get; set; }
 
-        [Required(ErrorMessage = "We need your email to reply.")]
+        [Required(ErrorMessage = "I need your email to reply.")]
         [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
         public string? Email { get; set; }
 
