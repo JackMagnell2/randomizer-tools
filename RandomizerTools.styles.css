@@ -381,7 +381,8 @@ main[b-gbdkusng17] {
     height: 100%;
     position: relative;
     transform-style: preserve-3d;
-    transition: transform 1s; 
+    transition: none;
+    will-change: transform;
 }
 
 /* Common coin face styling */
@@ -1288,6 +1289,9 @@ main[b-gbdkusng17] {
 .ball-wrapper[b-s01hvyprd3] {
     width: min(320px, 80vw);
     aspect-ratio: 1 / 1;
+    display: grid;
+    place-items: center;
+    margin-inline: auto;
 }
 
 /* Outer ball */
@@ -1415,6 +1419,10 @@ main[b-gbdkusng17] {
 @media (max-width: 767.98px) {
     .glass-card[b-s01hvyprd3] {
         padding: 1.25rem;
+    }
+
+    .ball-wrapper[b-s01hvyprd3] {
+        width: min(360px, 90vw);
     }
 
     .eight-ball-answer[b-s01hvyprd3] {
