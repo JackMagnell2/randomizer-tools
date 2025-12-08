@@ -51,6 +51,7 @@
                             <div class="text-center text-white mt-5 opacity-50">
                                 <span class="fs-1">🎰</span>
                                 <p class="mt-2 small">List is empty.</p>
+                                <p class ="mt-2 small">Tip: Separate entries by comma!</p>
                             </div>
                         }
                         else
@@ -179,8 +180,14 @@
     {
         if (!string.IsNullOrWhiteSpace(currentInput))
         {
-            _viewModel.AddEntry(currentInput);
-            _viewModel.Entries.Last().Weight = 10; 
+            var parts = currentInput.Split(new[] { ',', ';', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            foreach (var part in parts)
+            {
+                _viewModel.AddEntry(part);
+                _viewModel.Entries.Last().Weight = 10; 
+            }
+
             currentInput = string.Empty;
             await SaveEntries();
             await UpdateWheel();
