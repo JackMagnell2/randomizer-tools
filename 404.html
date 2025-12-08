@@ -4,8 +4,18 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RandomizerKit</title>
+    
+    <title>RandomizerKit - Free Online Randomizer Tools</title>
+    <meta name="description" content="Free online randomizer tools including Wheel of Names, Coin Flip, Dice Roller, Team Generator, and Password Generator. No ads, fast, and works offline." />
+    <meta name="keywords" content="randomizer, wheel of names, coin flip, dice roller, team generator, list shuffler, password generator, free tools" />
+    
+    <meta property="og:title" content="RandomizerKit - Free Randomizer Tools" />
+    <meta property="og:description" content="The fastest free randomizer tools on the web. Spin wheels, flip coins, and generate teams instantly." />
+    <meta property="og:image" content="https://randomizerkit.com/icon-512.png" />
+    <meta property="og:url" content="https://randomizerkit.com" />
+
     <base href="/" />
+    
     <script>
         (function () {
             try {
@@ -18,6 +28,7 @@
             } catch { }
         })();
     </script>
+
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="css/app.css" />
@@ -36,16 +47,16 @@
             );
         }
     }(window.location))
-</script>
-<script>
-    const redirectPath = sessionStorage.getItem('redirectPath');
-    if (redirectPath) {
-        sessionStorage.removeItem('redirectPath');
-        if (redirectPath !== window.location.pathname) {
-            window.history.replaceState(null, null, redirectPath);
+    </script>
+    <script>
+        const redirectPath = sessionStorage.getItem('redirectPath');
+        if (redirectPath) {
+            sessionStorage.removeItem('redirectPath');
+            if (redirectPath !== window.location.pathname) {
+                window.history.replaceState(null, null, redirectPath);
+            }
         }
-    }
-</script>
+    </script>
 </head>
 
 <body>
