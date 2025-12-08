@@ -1,0 +1,40 @@
+name: Deploy to GitHub Pages
+
+# Run this workflow every time you push to the 'master' or 'main' branch
+on:
+  push:
+    branches: [ master ]
+
+permissions:
+  contents: write
+
+jobs:
+  deploy-to-github-pages:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout the code
+      - uses: actions/checkout@v3
+
+      # 2. Setup .NET (Change '9.0.x' if you use a different version)
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x'
+
+      # 3. Publish the app (Builds the website files)
+      - name: Publish .NET Core Project
+        run: dotnet publish -c Release -o release --nologo
+
+      # 4. Copy the index.html to 404.html (Fail-safe for routing)
+      - name: Copy index.html to 404.html
+        run: cp release/wwwroot/index.html release/wwwroot/404.html
+
+      # 5. Add .nojekyll file (Required for Blazor)
+      - name: Add .nojekyll file
+        run: touch release/wwwroot/.nojekyll
+
+      # 6. Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: release/wwwroot
