@@ -21,6 +21,8 @@ window.coinHelper = {
     animateFlip: function (isHeads) {
         if (!this.coinElement) return;
 
+        // Prevent any transform transition from running after the animation (Safari on mobile)
+        this.coinElement.style.transition = 'none';
         this.coinElement.classList.remove("flipping", "heads", "tails");
         
         void this.coinElement.offsetWidth;
@@ -43,7 +45,12 @@ window.coinHelper = {
 
     // Finalizes the flip and notifies Blazor
     finishFlip: function (isHeads) {
+        if (!this.coinElement) return;
+
         this.coinElement.classList.remove("flipping");
+        this.coinElement.style.transition = 'none';
+        this.coinElement.classList.remove("heads", "tails");
+        this.coinElement.classList.add(isHeads ? "heads" : "tails");
         
         if (this.audioWin) {
             this.audioWin.currentTime = 0;
