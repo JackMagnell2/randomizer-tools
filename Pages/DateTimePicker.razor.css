@@ -1,0 +1,108 @@
+/* Cards */
+.glass-card {
+    background: var(--surface-strong);
+    border: 1px solid var(--border-soft);
+    border-radius: 16px;
+    box-shadow: var(--shadow-strong);
+}
+
+/* Inputs */
+.custom-input, .custom-textarea, .custom-select {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    border: 1px solid var(--border-soft);
+}
+
+.custom-textarea {
+    min-height: 60px;
+}
+
+/* Buttons */
+.spin-btn {
+    font-size: 1.1rem;
+    font-family: 'Fredoka', sans-serif;
+    letter-spacing: 1px;
+    padding: 12px 20px;
+    border-radius: 60px;
+    background: linear-gradient(to bottom, #ffce00, #ffa502);
+    border: 3px solid #fff;
+    box-shadow: 0 8px 0 #e67e22, 0 15px 20px rgba(0,0,0,0.3);
+    transition: all 0.1s;
+    text-transform: uppercase;
+    color: #fff;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.2);
+}
+
+.spin-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+    box-shadow: 0 10px 0 #e67e22, 0 20px 30px rgba(255, 165, 2, 0.4);
+}
+
+.spin-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #e67e22;
+}
+
+/* Results grid */
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+.result-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    color: var(--text-primary);
+    text-align: center;
+    box-shadow: var(--shadow-strong);
+}
+
+.result-date {
+    font-weight: 700;
+    font-size: 1.2rem;
+    font-family: 'Fredoka', sans-serif;
+}
+
+.result-time {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+/* History */
+.history-card {
+    min-height: 240px;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.history-item {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 0.6rem 0.9rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+@media (max-width: 767.98px) {
+    .glass-card {
+        padding: 1.25rem;
+    }
+}
+
+:root[data-theme="light"] .glass-card {
+    background: var(--surface);
+}
+
+:root[data-theme="light"] .result-card,
+:root[data-theme="light"] .history-item {
+    background: #ffffff;
+}

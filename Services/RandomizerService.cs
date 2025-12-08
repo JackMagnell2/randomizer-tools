@@ -184,5 +184,22 @@ namespace RandomizerTools.Services
             var index = RandomNumberGenerator.GetInt32(pool.Length);
             return pool[index];
         }
+
+        /// <summary>
+        /// Get a random DateTime between min and max
+        /// </summary>
+        public DateTime GetRandomDateTime(DateTime min, DateTime max)
+        {
+            if (min > max) (min, max) = (max, min);
+            var range = max - min;
+            var maxTicks = range.Ticks;
+            if (maxTicks <= 0) return min;
+
+            Span<byte> buffer = stackalloc byte[8];
+            RandomNumberGenerator.Fill(buffer);
+            ulong rnd = BitConverter.ToUInt64(buffer);
+            long ticks = (long)(rnd % (ulong)(maxTicks + 1));
+            return min.AddTicks(ticks);
+        }
     }
 }
