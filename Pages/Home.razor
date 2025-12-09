@@ -20,7 +20,25 @@
 
     <a href="/coin" class="tool-item">
         <div class="tool-content">
-            <span class="tool-emoji">🪙</span>
+            <span class="tool-emoji">
+                <svg width="1em" height="1em" viewBox="0 0 64 64" role="img" aria-label="Coin" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="coinEdgeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#f6d365" />
+                            <stop offset="100%" stop-color="#fda085" />
+                        </linearGradient>
+                        <linearGradient id="coinFaceGradient" x1="30%" y1="20%" x2="80%" y2="80%">
+                            <stop offset="0%" stop-color="#ffe082" />
+                            <stop offset="100%" stop-color="#f6b93b" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="32" cy="32" r="30" fill="url(#coinEdgeGradient)" stroke="#d69c2f" stroke-width="2" />
+                    <circle cx="32" cy="32" r="24" fill="url(#coinFaceGradient)" stroke="#d69c2f" stroke-width="2" />
+                    <path d="M22 24h20a2 2 0 0 1 2 2v12a6 6 0 0 1-6 6H24a2 2 0 0 1-2-2V26a2 2 0 0 1 2-2z" fill="none" stroke="#c87f1f" stroke-width="3" stroke-linecap="round" />
+                    <path d="M26 28h12a4 4 0 0 1 0 8H26" fill="none" stroke="#c87f1f" stroke-width="3" stroke-linecap="round" />
+                    <circle cx="24" cy="20" r="4" fill="#fff8e1" opacity="0.6" />
+                </svg>
+            </span>
             <h3>Coin Flip</h3>
             <p>Simple heads or tails decision maker</p>
         </div>
