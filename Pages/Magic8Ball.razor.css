@@ -8,7 +8,8 @@
 
 /* Ball container */
 .ball-wrapper {
-    width: min(320px, 80vw);
+    width: 100%;
+    max-width: 320px;
     aspect-ratio: 1 / 1;
     display: grid;
     place-items: center;
@@ -143,7 +144,7 @@
     }
 
     .ball-wrapper {
-        width: min(360px, 90vw);
+        max-width: 280px;
     }
 
     .eight-ball-answer {
